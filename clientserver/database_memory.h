@@ -8,7 +8,7 @@ using namespace std;
 class DatabaseMemory: public Database {
     public:
         DatabaseMemory();
-        string getNewsGroups();
+        string listNewsGroups();
         void createNewsGroup(string title);
         void deleteNewsGroup(int id); 
         string listArticles(int id);
