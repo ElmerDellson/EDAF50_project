@@ -21,15 +21,17 @@ LDFLAGS =   -g
 #LDFLAGS +=  -stdlib=libc++
 
 # Targets
+#PROGS = 
 
-all: libclientserver.a
+all: libclientserver.a #$(PROGS)
 	make -C test
+
 
 # Create the library; ranlib is for Darwin (OS X) and maybe other systems.
 # Doesn't seem to do any damage on other systems.
 
-libclientserver.a: connection.o server.o
-	ar rv libclientserver.a  connection.o server.o
+libclientserver.a: connection.o server.o database.o
+	ar rv libclientserver.a  connection.o server.o database.o
 	ranlib libclientserver.a
 
 # Phony targets

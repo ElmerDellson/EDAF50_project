@@ -24,13 +24,13 @@ LDFLAGS   = -g -L..
 LDLIBS = -lclientserver
 
 # Targets
-PROGS = myserver myclient
+PROGS = myserver myclient test
 
 all: $(PROGS)
 
 # Targets rely on implicit rules for compiling and linking
 # The dependency on libclientserver.a is not defined.
-myserver: myserver.o database.o
+myserver: myserver.o
 myclient: myclient.o
 
 SRC = $(wildcard *.cc)
