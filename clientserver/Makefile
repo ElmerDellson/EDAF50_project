@@ -30,8 +30,8 @@ all: libclientserver.a #$(PROGS)
 # Create the library; ranlib is for Darwin (OS X) and maybe other systems.
 # Doesn't seem to do any damage on other systems.
 
-libclientserver.a: connection.o server.o database.o
-	ar rv libclientserver.a  connection.o server.o database.o
+libclientserver.a: connection.o server.o database.o article.o database_memory.o
+	ar rv libclientserver.a  connection.o server.o database.o article.o database_memory.o
 	ranlib libclientserver.a
 
 # Phony targets

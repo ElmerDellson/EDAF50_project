@@ -71,7 +71,7 @@ Server init(int argc, char* argv[])
 int main(int argc, char* argv[])
 {
         auto server = init(argc, argv);
-        //DatabaseMemory database = DatabaseMemory();
+        DatabaseMemory database = DatabaseMemory();
 
         while (true) {
                 auto conn = server.waitForActivity();
@@ -85,13 +85,14 @@ int main(int argc, char* argv[])
                                 
                                     /* writeInt(conn, ANS_LIST_NG);
                                     writeInt(conn, PAR_NUM);*/
-                                    answer = "listed news groups";//database.listNewsGroups();
+                                    answer = database.listNewsGroups();
                                     cout << "com_list_ng"<< endl;
                                     writeString(conn, answer);
                                     break;
                                 case Protocol::COM_CREATE_NG:
                                     
-                                    cout << "com_list_ng"<< endl;
+                                    cout << "com_create_ng"<< endl;
+                                    database.createNewsGroup("newsgroup");
                                     writeString(conn, "created news group");
                                     break;
                                 case Protocol::COM_DELETE_NG:

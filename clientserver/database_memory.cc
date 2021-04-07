@@ -1,19 +1,52 @@
 #include "database_memory.h"
 
-DatabaseMemory::DatabaseMemory() {};
+DatabaseMemory::DatabaseMemory() {
 
-string DatabaseMemory::listNewsGroups() {
-    return "getArticle";
+
 }
 
-void DatabaseMemory::createNewsGroup(string title) {};
+string DatabaseMemory::listNewsGroups() {
+    string result = "";
+    for(pair<int , string> x : newsgroupsTitles){
+        result.append("hej" );
+        result.append(",");
+        result.append(x.second);
+        result.append(",");
+    }
+    return result;
+}
 
-void DatabaseMemory::deleteNewsGroup(int id) {}; 
+void DatabaseMemory::createNewsGroup(string title) {
+    int temp = currId++;
+    newsgroupsTitles.insert(pair<int, string>(temp,title));
+    newsgroupsarticles.emplace(temp, vector<Article>());
+}
 
-string DatabaseMemory::listArticles(int id) {return "list articles";};
+void DatabaseMemory::deleteNewsGroup(int id) {
+    newsgroupsTitles.erase(id);
+    newsgroupsarticles.erase(id);
+} 
 
-void DatabaseMemory::createArticle(int id, string author, string title, string text) {};
+string DatabaseMemory::listArticles(int id) {
+    string result = "";
+    for(Article x : newsgroupsarticles.at(id)){
+        result.append("hej");
+        result.append(",");
+        result.append(x.getTitle());
+        result.append(",");
+    }
+    return result;
+    }
 
-void DatabaseMemory::deleteArticle(int gid, int aid) {};
+void DatabaseMemory::createArticle(int id, string author, string title, string text) {
+    int temp = currId ++;
+    newsgroupsarticles.at(id).push_back(Article(temp, title, author, text));
+}
 
-string DatabaseMemory::getArticle(int gid, int aid) {return "get article";};
+void DatabaseMemory::deleteArticle(int gid, int aid) {
+           
+}
+
+string DatabaseMemory::getArticle(int gid, int aid) {
+    return "get article";
+    }
