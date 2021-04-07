@@ -97,23 +97,26 @@ int main(int argc, char* argv[])
                                     break;
                                 case Protocol::COM_DELETE_NG:
                                     cout << "com_delete_ng"<< endl;
+                                    database.deleteNewsGroup(1);
                                     writeString(conn, "deleted news group");
                                     break;
                                 case Protocol::COM_LIST_ART:
-                                    answer = "listed articles";//database.listArticles(1);
+                                    answer = database.listArticles(0);
                                     cout << "com_list_art"<< endl;
                                     writeString(conn, answer);
                                     break;
                                 case Protocol::COM_CREATE_ART:
                                     cout << "com_create_art"<< endl;
+                                    database.createArticle(0, "jorgen", "life_of_jorgen", "he a good boy" );
                                     writeString(conn, "created article");
                                     break;
                                 case Protocol::COM_DELETE_ART:
                                     cout << "com_delete_art"<< endl;
+                                    database.deleteArticle(0,3);
                                     writeString(conn, "deleted news group");
                                     break;
                                 case Protocol::COM_GET_ART:
-                                    answer = "get article";//database.getArticle(1,1);
+                                    answer = database.getArticle(0,3);
                                     cout << "com_list_ng"<< endl;
                                     writeString(conn, answer);
                                     break;
