@@ -39,12 +39,15 @@ void Message_handler::writeString(const shared_ptr<Connection>& conn, const stri
         for (char c : s) {
                 conn->write(c);
         }
-        conn->write('$');
+        //conn->write('$');
 }
 void Message_handler::writeInt(const shared_ptr<Connection>& conn, const int& s)
 {
         
     conn->write(s);
+}
+void Message_handler::addDollar(const shared_ptr<Connection>& conn){
+    conn->write('$');
 }
 
 bool Message_handler::handle(){
@@ -56,43 +59,75 @@ bool Message_handler::handle(){
                                 {
                                 case Protocol::COM_LIST_NG:
                                 
-                                    /* writeInt(conn, ANS_LIST_NG);
-                                    writeInt(conn, PAR_NUM);*/
+                                    writeInt(conn, static_cast<int>(Protocol::ANS_LIST_NG));
+                                    writeInt(conn, static_cast<int>(Protocol::PAR_NUM));
+                                    writeString(conn, " #numbOfGroups# ");
+                                    writeInt(conn, static_cast<int>(Protocol::PAR_STRING));
                                     answer = database.listNewsGroups();
                                     cout << "com_list_ng"<< endl;
                                     cout << "answer = "<< answer << endl;
+                                    writeString(conn, "here is the answer: ");
                                     writeString(conn, answer);
+                                    writeInt(conn, static_cast<int>(Protocol::ANS_END));
+                                    addDollar(conn);
                                     break;
                                 case Protocol::COM_CREATE_NG:
                                     
                                     cout << "com_create_ng"<< endl;
                                     database.createNewsGroup("newsgroup");
+                                    writeInt(conn, static_cast<int>(Protocol::ANS_CREATE_NG));
+                                    writeInt(conn, static_cast<int>(Protocol::ANS_ACK));
+                                    writeInt(conn, static_cast<int>(Protocol::ANS_END));
                                     writeString(conn, database.listNewsGroups());
+                                    addDollar(conn);
                                     break;
                                 case Protocol::COM_DELETE_NG:
+                                    writeInt(conn, static_cast<int>(Protocol::ANS_DELETE_NG));
+                                    writeInt(conn, static_cast<int>(Protocol::ANS_ACK));
+                                    writeInt(conn, static_cast<int>(Protocol::ANS_END));
                                     cout << "com_delete_ng"<< endl;
                                     database.deleteNewsGroup(1);
                                     writeString(conn, "deleted news group");
+                                    addDollar(conn);
                                     break;
                                 case Protocol::COM_LIST_ART:
+                                    writeInt(conn, static_cast<int>(Protocol::ANS_LIST_ART));
+                                    writeInt(conn, static_cast<int>(Protocol::ANS_ACK));
+                                    writeInt(conn, static_cast<int>(Protocol::PAR_NUM));
+                                    writeInt(conn, static_cast<int>(Protocol::PAR_STRING));
                                     answer = database.listArticles(0);
                                     cout << "com_list_art"<< endl;
                                     writeString(conn, answer);
+                                    writeInt(conn, static_cast<int>(Protocol::ANS_END));
+                                    addDollar(conn);
                                     break;
                                 case Protocol::COM_CREATE_ART:
+                                    writeInt(conn, static_cast<int>(Protocol::ANS_CREATE_ART));
+                                    writeInt(conn, static_cast<int>(Protocol::ANS_ACK));
+                                    writeInt(conn, static_cast<int>(Protocol::ANS_END));
                                     cout << "com_create_art"<< endl;
                                     database.createArticle(0, "jorgen", "life_of_jorgen", "he a good boy" );
                                     writeString(conn, "created article");
+                                    addDollar(conn);
                                     break;
                                 case Protocol::COM_DELETE_ART:
+                                    writeInt(conn, static_cast<int>(Protocol::ANS_DELETE_ART));
+                                    writeInt(conn, static_cast<int>(Protocol::ANS_ACK));
+                                    writeInt(conn, static_cast<int>(Protocol::ANS_END));
                                     cout << "com_delete_art"<< endl;
                                     database.deleteArticle(0,3);
                                     writeString(conn, "deleted news group");
                                     break;
                                 case Protocol::COM_GET_ART:
+                                    writeInt(conn, static_cast<int>(Protocol::ANS_GET_ART));
+                                    writeInt(conn, static_cast<int>(Protocol::ANS_ACK));
+                                    writeInt(conn, static_cast<int>(Protocol::PAR_STRING));
+                                    writeInt(conn, static_cast<int>(Protocol::PAR_STRING));
+                                    writeInt(conn, static_cast<int>(Protocol::PAR_STRING));
                                     answer = database.getArticle(0,3);
                                     cout << "com_list_ng"<< endl;
                                     writeString(conn, answer);
+                                    writeInt(conn, static_cast<int>(Protocol::ANS_END));
                                     break;
                                 
                                 default:

@@ -16,6 +16,7 @@ class Message_handler {
         void writeString(const shared_ptr<Connection>& conn, const string& s);
         void writeInt(const shared_ptr<Connection>& conn, const int& s);
         bool handle();
+        void addDollar(const shared_ptr<Connection>& conn);
     private:
         DatabaseMemory& database;
         shared_ptr<Connection> conn;
