@@ -16,7 +16,7 @@
 using namespace std;
 
 
-Message_handler::Message_handler(){}
+//Message_handler::Message_handler(){}
 Message_handler::Message_handler(shared_ptr<Connection>& conn, DatabaseMemory& db)
                                 : conn{conn}, database{db} {}
 /*
@@ -67,7 +67,7 @@ bool Message_handler::handle(){
                                     
                                     cout << "com_create_ng"<< endl;
                                     database.createNewsGroup("newsgroup");
-                                    writeString(conn, "created news group");
+                                    writeString(conn, database.listNewsGroups());
                                     break;
                                 case Protocol::COM_DELETE_NG:
                                     cout << "com_delete_ng"<< endl;
