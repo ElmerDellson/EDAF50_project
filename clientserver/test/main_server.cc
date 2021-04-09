@@ -1,4 +1,3 @@
-/* myserver.cc: sample server program */
 #include "connection.h"
 #include "connectionclosedexception.h"
 #include "server.h"
@@ -15,7 +14,7 @@ using namespace std;
 Server init(int argc, char* argv[])
 {
     if (argc != 2) {
-        cerr << "Usage: myserver port-number" << endl;
+        cerr << "Usage: main_server port-number" << endl;
         exit(1);
     }
 
