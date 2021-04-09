@@ -6,7 +6,6 @@
 using namespace std;
 
 class Article{
-
     public:
         Article();
         Article(int id, string title, string author, string article);
@@ -14,13 +13,11 @@ class Article{
         string getTitle();
         string getAuthor();
         string getArticle();
-
     private:
         int id;
         string title;
         string author;
         string article;
-
 };
 
 #endif

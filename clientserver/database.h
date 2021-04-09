@@ -7,13 +7,13 @@ using namespace std;
 
 class Database {
     public:
-        virtual string listNewsGroups() = 0;
-        virtual void createNewsGroup(string title) = 0;
-        virtual void deleteNewsGroup(int id) = 0; 
-        virtual string listArticles(int id) = 0;
-        virtual void createArticle(int id, string author, string title, string text) = 0;
-        virtual void deleteArticle(int gid, int aid) = 0;
-        virtual string getArticle(int gid, int aid) = 0;
+        virtual string ListNewsgroups() = 0;
+        virtual void CreateNewsgroup(string title) = 0;
+        virtual void DeleteNewsgroup(int id) = 0; 
+        virtual string ListArticles(int id) = 0;
+        virtual void CreateArticle(int id, string author, string title, string text) = 0;
+        virtual void DeleteArticle(int gid, int aid) = 0;
+        virtual string GetArticle(int gid, int aid) = 0;
 };
 
 #endif

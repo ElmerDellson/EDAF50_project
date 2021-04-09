@@ -1,12 +1,9 @@
 #include "database_memory.h"
 #include <algorithm>
 
-DatabaseMemory::DatabaseMemory() {
+DatabaseMemory::DatabaseMemory() { }
 
-
-}
-
-string DatabaseMemory::listNewsGroups() {
+string DatabaseMemory::ListNewsgroups() {
     string result = "";
     for(pair<int , string> x : newsgroupsTitles){
         result.append(to_string(x.first));
@@ -17,18 +14,18 @@ string DatabaseMemory::listNewsGroups() {
     return result;
 }
 
-void DatabaseMemory::createNewsGroup(string title) {
+void DatabaseMemory::CreateNewsgroup(string title) {
     int temp = currId++;
     newsgroupsTitles.insert(pair<int, string>(temp,title));
     newsgroupsarticles.emplace(temp, vector<Article>());
 }
 
-void DatabaseMemory::deleteNewsGroup(int id) {
+void DatabaseMemory::DeleteNewsgroup(int id) {
     newsgroupsTitles.erase(id);
     newsgroupsarticles.erase(id);
 } 
 
-string DatabaseMemory::listArticles(int id) {
+string DatabaseMemory::ListArticles(int id) {
     string result = "";
     for(Article x : newsgroupsarticles.at(id)){
         result.append(to_string(x.getId()));
@@ -37,19 +34,19 @@ string DatabaseMemory::listArticles(int id) {
         result.append(",");
     }
     return result;
-    }
+}
 
-void DatabaseMemory::createArticle(int id, string author, string title, string text) {
+void DatabaseMemory::CreateArticle(int id, string author, string title, string text) {
     int temp = currId ++;
     newsgroupsarticles.at(id).push_back(Article(temp, title, author, text));
 }
 
-void DatabaseMemory::deleteArticle(int gid, int aid) {
+void DatabaseMemory::DeleteArticle(int gid, int aid) {
            vector<Article>& v = newsgroupsarticles.at(gid);
            v.erase(remove_if(v.begin(), v.end(), [& aid](Article x){return x.getId() == aid;})); 
 }
 
-string DatabaseMemory::getArticle(int gid, int aid) {
+string DatabaseMemory::GetArticle(int gid, int aid) {
     string result = "";
     for(Article x : newsgroupsarticles.at(gid)){
         if(x.getId() == aid){
@@ -57,4 +54,4 @@ string DatabaseMemory::getArticle(int gid, int aid) {
         }
     }
     return result;
-    }
+}

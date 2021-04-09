@@ -8,21 +8,25 @@
 
 using namespace std;
 
-class Message_handler {
+class MessageHandler {
     public:
         //Message_handler();
-        Message_handler(shared_ptr<Connection>& conn, DatabaseMemory& db);
-        int readNumber(const shared_ptr<Connection>& conn);
-        void writeString(const shared_ptr<Connection>& conn, const string& s);
-        void writeInt(const shared_ptr<Connection>& conn, const int& s);
-        bool handle();
-        void addDollar(const shared_ptr<Connection>& conn);
+        MessageHandler(shared_ptr<Connection>& conn, DatabaseMemory& db);
+        int ReadNumber(const shared_ptr<Connection>& conn);
+        void WriteString(const shared_ptr<Connection>& conn, const string& s);
+        void WriteInt(const shared_ptr<Connection>& conn, const int& s);
+        bool Handle();
     private:
+        void ListNewsgroups(string);
+        void CreateNewsgroup();
+        void DeleteNewsgroup();
+        void ListArticle(string);
+        void CreateArticle();
+        void DeleteArticle();
+        void GetArticle(string);
+        void WriteDollar(const shared_ptr<Connection>& conn);
         DatabaseMemory& database;
         shared_ptr<Connection> conn;
-
-
 };
-
 
 #endif
