@@ -24,7 +24,7 @@ LDFLAGS   = -g -L..
 LDLIBS = -lclientserver
 
 # Targets
-PROGS = myserver myclient test main_server
+PROGS = myserver myclient test main_server main_client
 
 all: $(PROGS)
 
@@ -33,6 +33,7 @@ all: $(PROGS)
 myserver: myserver.o
 myclient: myclient.o
 main_server: main_server.o message_handler.o
+main_client: main_client.o
 
 SRC = $(wildcard *.cc)
 
