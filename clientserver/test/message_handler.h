@@ -3,6 +3,7 @@
 
 #include "database.h"
 #include "database_memory.h"
+#include "database_disk.h"
 #include "connection.h"
 #include "server.h"
 
@@ -11,7 +12,7 @@ using namespace std;
 class MessageHandler {
     public:
         //Message_handler();
-        MessageHandler(shared_ptr<Connection>& conn, DatabaseMemory& db);
+        MessageHandler(shared_ptr<Connection>& conn, Database* db);
         int ReadNumber(const shared_ptr<Connection>& conn);
         void WriteString(const shared_ptr<Connection>& conn, const string& s);
         void WriteInt(const shared_ptr<Connection>& conn, const int& s);
@@ -25,7 +26,7 @@ class MessageHandler {
         void DeleteArticle();
         void GetArticle(string);
         void WriteDollar(const shared_ptr<Connection>& conn);
-        DatabaseMemory& database;
+        Database* database;
         shared_ptr<Connection> conn;
 };
 

@@ -16,7 +16,7 @@
 using namespace std;
 
 //Message_handler::Message_handler(){}
-MessageHandler::MessageHandler(shared_ptr<Connection>& conn, DatabaseMemory& db)
+MessageHandler::MessageHandler(shared_ptr<Connection>& conn, Database* db)
                                 : conn{conn}, database{db} {}
 /*
  * Read an integer from a client.
@@ -93,7 +93,7 @@ void MessageHandler::ListNewsgroups(string answer) {
     WriteInt(conn, static_cast<int>(Protocol::PAR_NUM));
     WriteString(conn, " #numbOfGroups# "); //TODO: Return actual number of groups
     WriteInt(conn, static_cast<int>(Protocol::PAR_STRING));
-    answer = database.ListNewsgroups();
+    answer = database->ListNewsgroups();
     cout << "com_list_ng"<< endl;
     cout << "answer = "<< answer << endl;
     WriteString(conn, "here is the answer: ");
@@ -104,11 +104,11 @@ void MessageHandler::ListNewsgroups(string answer) {
 
 void MessageHandler::CreateNewsgroup() {
     cout << "com_create_ng"<< endl;
-    database.CreateNewsgroup("newsgroup");
+    database->CreateNewsgroup("newsgroup");
     WriteInt(conn, static_cast<int>(Protocol::ANS_CREATE_NG));
     WriteInt(conn, static_cast<int>(Protocol::ANS_ACK));
     WriteInt(conn, static_cast<int>(Protocol::ANS_END));
-    WriteString(conn, database.ListNewsgroups());
+    WriteString(conn, database->ListNewsgroups());
     WriteDollar(conn);
 }
 
@@ -117,7 +117,7 @@ void MessageHandler::DeleteNewsgroup() {
     WriteInt(conn, static_cast<int>(Protocol::ANS_ACK));
     WriteInt(conn, static_cast<int>(Protocol::ANS_END));
     cout << "com_delete_ng"<< endl;
-    database.DeleteNewsgroup(1);
+    database->DeleteNewsgroup(1);
     WriteString(conn, "deleted news group");
     WriteDollar(conn);
 }
@@ -127,7 +127,7 @@ void MessageHandler::ListArticle(string answer) {
     WriteInt(conn, static_cast<int>(Protocol::ANS_ACK));
     WriteInt(conn, static_cast<int>(Protocol::PAR_NUM));
     WriteInt(conn, static_cast<int>(Protocol::PAR_STRING));
-    answer = database.ListArticles(0);
+    answer = database->ListArticles(0);
     cout << "com_list_art"<< endl;
     WriteString(conn, answer);
     WriteInt(conn, static_cast<int>(Protocol::ANS_END));
@@ -139,7 +139,7 @@ void MessageHandler::CreateArticle() {
     WriteInt(conn, static_cast<int>(Protocol::ANS_ACK));
     WriteInt(conn, static_cast<int>(Protocol::ANS_END));
     cout << "com_create_art"<< endl;
-    database.CreateArticle(0, "jorgen", "life_of_jorgen", "he a good boy" );
+    database->CreateArticle(0, "jorgen", "life_of_jorgen", "he a good boy" );
     WriteString(conn, "created article");
     WriteDollar(conn);
 }
@@ -149,7 +149,7 @@ void MessageHandler::DeleteArticle() {
     WriteInt(conn, static_cast<int>(Protocol::ANS_ACK));
     WriteInt(conn, static_cast<int>(Protocol::ANS_END));
     cout << "com_delete_art"<< endl;
-    database.DeleteArticle(0,3);
+    database->DeleteArticle(0,3);
     WriteString(conn, "deleted news group");
 }
 
@@ -159,7 +159,7 @@ void MessageHandler::GetArticle(string answer) {
     WriteInt(conn, static_cast<int>(Protocol::PAR_STRING));
     WriteInt(conn, static_cast<int>(Protocol::PAR_STRING));
     WriteInt(conn, static_cast<int>(Protocol::PAR_STRING));
-    answer = database.GetArticle(0,3);
+    answer = database->GetArticle(0,3);
     cout << "com_list_ng"<< endl;
     WriteString(conn, answer);
     WriteInt(conn, static_cast<int>(Protocol::ANS_END));

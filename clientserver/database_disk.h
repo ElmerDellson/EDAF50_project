@@ -1,18 +1,19 @@
-#ifndef DATABASE_MEMORY_H
-#define DATABASE_MEMORY_H
+#ifndef DATABASE_DISK_H
+#define DATABASE_DISK_H
 
 #include "database.h"
 #include "article.h"
 
+#include <iostream>
 #include <map>
 #include <vector>
 
 using namespace std;
 
-class DatabaseMemory: public Database {
+class DatabaseDisk: public Database {
     public:
-        DatabaseMemory();
-        ~DatabaseMemory() =default;
+        DatabaseDisk();
+        ~DatabaseDisk() =default;
         string ListNewsgroups() override;
         void CreateNewsgroup(string title) override;
         void DeleteNewsgroup(int id) override; 
