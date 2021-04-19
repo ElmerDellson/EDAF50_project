@@ -3,6 +3,7 @@
 
 #include "database.h"
 #include "database_memory.h"
+#include "database_disk.h"
 #include "connection.h"
 #include "server.h"
 

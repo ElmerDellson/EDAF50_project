@@ -37,8 +37,22 @@ Server init(int argc, char* argv[])
 int main(int argc, char* argv[])
 {
     auto server = init(argc, argv);
-    Database* db = new DatabaseMemory{};
+    Database* db;
 
+    cout << "Please select Database Type.\n 1. In-memory\n 2. On disk" << endl;
+    int selection;
+    cin >> selection;
+
+    switch(selection) {
+        case 1:
+            db = new DatabaseMemory{};
+            cout << "Case 1: In-memory" << endl;
+            break;
+        default:
+            db = new DatabaseDisk{};
+            cout << "Case 2: On disk" << endl;
+    };
+    
     while (true) {
         auto conn = server.waitForActivity();
         MessageHandler mh{conn, db};
