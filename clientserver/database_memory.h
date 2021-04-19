@@ -12,13 +12,14 @@ using namespace std;
 class DatabaseMemory: public Database {
     public:
         DatabaseMemory();
-        string ListNewsgroups();
-        void CreateNewsgroup(string title);
-        void DeleteNewsgroup(int id); 
-        string ListArticles(int id);
-        void CreateArticle(int id, string author, string title, string text);
-        void DeleteArticle(int gid, int aid);
-        string GetArticle(int gid, int aid);
+        ~DatabaseMemory() =default;
+        string ListNewsgroups() override;
+        void CreateNewsgroup(string title) override;
+        void DeleteNewsgroup(int id) override; 
+        string ListArticles(int id) override;
+        void CreateArticle(int id, string author, string title, string text) override;
+        void DeleteArticle(int gid, int aid) override;
+        string GetArticle(int gid, int aid) override;
     private:
         map<int, vector<Article>> newsgroupsarticles;
         map<int, string> newsgroupsTitles;

@@ -7,6 +7,7 @@ using namespace std;
 
 class Database {
     public:
+        virtual ~Database() =default;
         virtual string ListNewsgroups() = 0;
         virtual void CreateNewsgroup(string title) = 0;
         virtual void DeleteNewsgroup(int id) = 0; 
