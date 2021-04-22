@@ -7,7 +7,7 @@ int main()
 {
     Database* db;
 
-    string temp = db->GetArticle(1, 1);
+    string temp = "hej";//db->GetArticle(1, 1);
 
     cout << "temp:" << temp << endl;
 

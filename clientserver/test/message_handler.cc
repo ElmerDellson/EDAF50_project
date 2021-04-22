@@ -206,23 +206,58 @@ void MessageHandler::CreateArticle() {
 }
 
 void MessageHandler::DeleteArticle() {
+    int id;
+    int id2;
+    Protocol p = ReadProtocol(conn);
+    if(p == Protocol::PAR_NUM) cout << "alles gut" << endl;
+    id = ReadNumber(conn);
+    cout << "id : " << id << endl;
+    cout << "com_create_art"<< endl;
+    p = ReadProtocol(conn);
+    if(p == Protocol::PAR_NUM) cout << "alles gut" << endl;
+    id2 = ReadNumber(conn);
+    cout << "id2 : " << id2 << endl;
+    database->DeleteArticle(id,id2);
     WriteProtocol(conn, Protocol::ANS_DELETE_ART);
     WriteProtocol(conn, Protocol::ANS_ACK);
     WriteProtocol(conn, Protocol::ANS_END);
-    cout << "com_delete_art"<< endl;
-    database->DeleteArticle(0,3);
-    WriteString(conn, "deleted news group");
+    
 }
 
 void MessageHandler::GetArticle(string answer) {
+    int id;
+    int id2;
+    Protocol p = ReadProtocol(conn);
+    if(p == Protocol::PAR_NUM) cout << "alles gut" << endl;
+    id = ReadNumber(conn);
+    cout << "id : " << id << endl;
+    cout << "com_create_art"<< endl;
+    p = ReadProtocol(conn);
+    if(p == Protocol::PAR_NUM) cout << "alles gut" << endl;
+    id2 = ReadNumber(conn);
+    cout << "id2 : " << id2 << endl;
     WriteProtocol(conn, Protocol::ANS_GET_ART);
     WriteProtocol(conn, Protocol::ANS_ACK);
+    answer = database->GetArticleTitle(id,id2);
     WriteProtocol(conn, Protocol::PAR_STRING);
+    WriteInt(conn, answer.length());
+    for(char x :answer){
+        WriteChar(conn, x);
+    };
+    answer = database->GetArticleAuthor(id,id2);
     WriteProtocol(conn, Protocol::PAR_STRING);
+    WriteInt(conn, answer.length());
+    for(char x :answer){
+        WriteChar(conn, x);
+    };
+    answer = database->GetArticleText(id,id2);
     WriteProtocol(conn, Protocol::PAR_STRING);
-    answer = database->GetArticle(0,3);
+    WriteInt(conn, answer.length());
+    for(char x :answer){
+        WriteChar(conn, x);
+    };
+    
     cout << "com_list_ng"<< endl;
-    WriteString(conn, answer);
     WriteProtocol(conn, Protocol::ANS_END);
 }
 

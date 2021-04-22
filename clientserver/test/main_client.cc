@@ -171,8 +171,47 @@ void createArticle(const Connection& conn){
         } 
     }
 }
-void deleteArticle(const Connection& conn){}
-void getArticle(const Connection& conn){}
+void deleteArticle(const Connection& conn){
+    Protocol p;
+    p = static_cast<Protocol>(readChar(conn));
+    while(p != Protocol::ANS_END){
+        if( p == Protocol::ANS_ACK){
+            cout << "deleted succesfully" << endl;
+            p = static_cast<Protocol>(readChar(conn));
+        }
+        if( p == Protocol::ANS_NAK){
+            cout << "things went to shit" << endl;
+            cout << "error message" << endl;
+            p = static_cast<Protocol>(readChar(conn));
+        }
+    } 
+}
+void getArticle(const Connection& conn){
+    Protocol p;
+    p = static_cast<Protocol>(readChar(conn));
+    int num;
+    while(p != Protocol::ANS_END){
+        if(p == Protocol::ANS_ACK){
+            p = static_cast<Protocol>(readChar(conn));        
+            int i;
+            while(p == Protocol::PAR_STRING){
+                
+                i = ReadNumber(conn);
+                string temp = "";
+                for(int j = 0; j<i; j++){
+                    temp += readChar(conn);
+                }
+                cout << "temp: " << temp << endl;
+                p = static_cast<Protocol>(readChar(conn));
+            
+            }
+            
+        }
+        if(p == Protocol::ANS_NAK){
+            cout << "error message" << endl;
+        }
+    }
+}
 
 
 
@@ -258,9 +297,21 @@ int app(const Connection& conn)
                 break;
             case 6:
                 writeProtocol(conn, Protocol::COM_DELETE_ART);
+                writeProtocol(conn, Protocol::PAR_NUM);
+                cin >> id;
+                writeNumber(conn, id);
+                writeProtocol(conn, Protocol::PAR_NUM);
+                cin >> id;
+                writeNumber(conn, id);
                 break;
             case 7:
                 writeProtocol(conn, Protocol::COM_GET_ART);
+                writeProtocol(conn, Protocol::PAR_NUM);
+                cin >> id;
+                writeNumber(conn, id);
+                writeProtocol(conn, Protocol::PAR_NUM);
+                cin >> id;
+                writeNumber(conn, id);
                 break;
             
             default:

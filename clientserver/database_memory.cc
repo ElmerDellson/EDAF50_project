@@ -54,12 +54,27 @@ void DatabaseMemory::DeleteArticle(int gid, int aid) {
            v.erase(remove_if(v.begin(), v.end(), [& aid](Article x){return x.getId() == aid;})); 
 }
 
-string DatabaseMemory::GetArticle(int gid, int aid) {
-    string result = "";
+string DatabaseMemory::GetArticleTitle(int gid, int aid) {
     for(Article x : newsgroupsarticles.at(gid)){
         if(x.getId() == aid){
-            result += x.getAuthor() + " , " +  x.getTitle() + " , " + x.getArticle();
+            return x.getTitle();
         }
     }
-    return result;
+    return "";
+}
+string DatabaseMemory::GetArticleAuthor(int gid, int aid) {
+    for(Article x : newsgroupsarticles.at(gid)){
+        if(x.getId() == aid){
+            return x.getAuthor();
+        }
+    }
+    return "";
+}
+string DatabaseMemory::GetArticleText(int gid, int aid) {
+    for(Article x : newsgroupsarticles.at(gid)){
+        if(x.getId() == aid){
+            return x.getArticle();
+        }
+    }
+    return "";
 }
