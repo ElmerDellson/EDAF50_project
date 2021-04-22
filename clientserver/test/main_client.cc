@@ -27,6 +27,20 @@ void write(const Connection& conn, unsigned char value)
         conn.write(value);
 }
 
+void writeProtocol(const Connection& conn, Protocol value)
+{
+        conn.write(static_cast<char>(value));
+}
+
+void writeString(const Connection& conn, string s)
+{
+        writeProtocol(conn, Protocol::PAR_STRING);
+        writeNumber(conn, s.size());
+        for(char c: s){
+            write(conn, c);
+        }
+}
+
 /*
  * Read a string from the server.
  */
@@ -42,43 +56,47 @@ string readString(const Connection& conn)
 
 char readChar(const Connection& conn)
 {
-        char ch = conn.read();
-        return ch;
+        return conn.read();
+}
+
+int ReadNumber(const Connection& conn)
+{
+        unsigned char byte1 = conn.read();
+        unsigned char byte2 = conn.read();
+        unsigned char byte3 = conn.read();
+        unsigned char byte4 = conn.read();
+        return (byte1 << 24) | (byte2 << 16) | (byte3 << 8) | byte4;
 }
 
 void listNewsGroups(const Connection& conn){
     Protocol p;
     p = static_cast<Protocol>(readChar(conn));
-    char num;
-    vector<string> v;
+    int num;
+    //vector<string> v;
     while(p != Protocol::ANS_END){
         if(p == Protocol::PAR_NUM){
-            num = readChar(conn);
+            num = ReadNumber(conn);
             p = static_cast<Protocol>(readChar(conn));
         }
         if(p == Protocol::PAR_STRING){
-            char i = readChar(conn);
+            int i = ReadNumber(conn);
             string temp = "";
-            for(char j = 0; j<i; j++){
+            for(int j = 0; j<i; j++){
                 temp += readChar(conn);
             }
-            v.push_back(temp);
+            cout << temp << endl;
             p = static_cast<Protocol>(readChar(conn));
         }
     }
-    for( string x : v){
-        cout << x << endl;
-    };
-};
+}
 void createNewsGroups(const Connection& conn){
     Protocol p;
     p = static_cast<Protocol>(readChar(conn));
     while(p != Protocol::ANS_END){
-        if(p == Protocol::ANS_CREATE_NG){
-            p = static_cast<Protocol>(readChar(conn));
-        }
+        
         if( p == Protocol::ANS_ACK){
             cout << "created succesfully" << endl;
+            p = static_cast<Protocol>(readChar(conn));
         }
         if( p == Protocol::ANS_NAK){
             switch (static_cast<Protocol>(readChar(conn)))
@@ -99,7 +117,7 @@ void createNewsGroups(const Connection& conn){
             }
         }
     } 
-};
+}
 void deleteNewsGroups(const Connection& conn){
     Protocol p;
     p = static_cast<Protocol>(readChar(conn));
@@ -115,21 +133,21 @@ void deleteNewsGroups(const Connection& conn){
             cout << "error message" << endl;
         }
     } 
-};
+}
 void listArticles(const Connection& conn){
     Protocol p;
     p = static_cast<Protocol>(readChar(conn));
-    char num;
+    int num;
     vector<string> v;
     while(p != Protocol::ANS_END){
         if(p == Protocol::PAR_NUM){
-            num = readChar(conn);
+            num = ReadNumber(conn);
             p = static_cast<Protocol>(readChar(conn));
         }
         if(p == Protocol::PAR_STRING){
-            char i = readChar(conn);
+            int i = ReadNumber(conn);
             string temp = "";
-            for(char j = 0; j<i; j++){
+            for(int j = 0; j<i; j++){
                 temp += readChar(conn);
             }
             v.push_back(temp);
@@ -139,10 +157,10 @@ void listArticles(const Connection& conn){
             cout << "error message" << endl;
         }
     }
-};
-void createArticle(const Connection& conn);
-void deleteArticle(const Connection& conn);
-void getArticle(const Connection& conn);
+}
+void createArticle(const Connection& conn){}
+void deleteArticle(const Connection& conn){}
+void getArticle(const Connection& conn){}
 
 
 
@@ -186,10 +204,41 @@ int app(const Connection& conn)
     cout << "Get article : 7" << endl;
 
     int nbr;
+    string temp;
         while (cin >> nbr) {
+            switch (nbr)
+            {
+            case 1:
+                writeProtocol(conn, Protocol::COM_LIST_NG);
+                break;
+            case 2:
+                writeProtocol(conn, Protocol::COM_CREATE_NG);
+                cin >> temp;
+                writeString(conn, temp);
+                break;
+            case 3:
+                writeProtocol(conn, Protocol::COM_DELETE_NG);
+                break;
+            case 4:
+                writeProtocol(conn, Protocol::COM_LIST_ART);
+                break;
+            case 5:
+                writeProtocol(conn, Protocol::COM_CREATE_ART);
+                break;
+            case 6:
+                writeProtocol(conn, Protocol::COM_DELETE_ART);
+                break;
+            case 7:
+                writeProtocol(conn, Protocol::COM_GET_ART);
+                break;
+            
+            default:
+                break;
+            }
                 try {
-                        writeNumber(conn, nbr);
+                        
                         char reply = readChar(conn);
+                        
                         switch (static_cast<Protocol>(reply))
                         {
                         case Protocol::ANS_LIST_NG :
@@ -217,7 +266,7 @@ int app(const Connection& conn)
                         default:
                             break;
                         }
-                        cout << " " << reply << endl;
+                        //cout << " " << reply << endl;
                         cout << "give another command: ";
                 } catch (ConnectionClosedException&) {
                         cout << " no reply from server. Exiting." << endl;

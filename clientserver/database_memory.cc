@@ -14,6 +14,10 @@ string DatabaseMemory::ListNewsgroups() {
     return result;
 }
 
+int DatabaseMemory::NewsGroupNumber(){
+    return newsgroupsTitles.size();
+}
+
 void DatabaseMemory::CreateNewsgroup(string title) {
     int temp = currId++;
     newsgroupsTitles.insert(pair<int, string>(temp,title));

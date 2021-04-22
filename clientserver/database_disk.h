@@ -15,6 +15,7 @@ class DatabaseDisk: public Database {
         DatabaseDisk();
         ~DatabaseDisk() =default;
         string ListNewsgroups() override;
+        int NewsGroupNumber() override;
         void CreateNewsgroup(string title) override;
         void DeleteNewsgroup(int id) override; 
         string ListArticles(int id) override;

@@ -30,6 +30,11 @@ int MessageHandler::ReadNumber(const shared_ptr<Connection>& conn)
         return (byte1 << 24) | (byte2 << 16) | (byte3 << 8) | byte4;
 }
 
+Protocol MessageHandler::ReadProtocol(const shared_ptr<Connection>& conn)
+{
+        return static_cast<Protocol>(conn->read());
+}
+
 /*
  * Send a string to a client.
  */
@@ -40,9 +45,19 @@ void MessageHandler::WriteString(const shared_ptr<Connection>& conn, const strin
         }
         //conn->write('$');
 }
-void MessageHandler::WriteInt(const shared_ptr<Connection>& conn, const int& s)
+void MessageHandler::WriteInt(const shared_ptr<Connection>& conn, const int& value)
 {
-    conn->write(s);
+    conn->write((value >> 24) & 0xFF);
+        conn->write((value >> 16) & 0xFF);
+        conn->write((value >> 8) & 0xFF);
+        conn->write(value & 0xFF);
+}
+
+void MessageHandler::WriteProtocol(const shared_ptr<Connection>& conn, const Protocol c){
+     conn->write(static_cast<char>(c));
+}
+void MessageHandler::WriteChar(const shared_ptr<Connection>& conn, const char& c){
+    conn->write(c);
 }
 
 void MessageHandler::WriteDollar(const shared_ptr<Connection>& conn){
@@ -53,7 +68,7 @@ void MessageHandler::WriteDollar(const shared_ptr<Connection>& conn){
 
 bool MessageHandler::Handle(){
     try {
-        Protocol nbr = static_cast<Protocol>(ReadNumber(conn));
+        Protocol nbr = ReadProtocol(conn);
         string answer = "";
         switch (nbr) {
             case Protocol::COM_LIST_NG:
@@ -89,27 +104,35 @@ bool MessageHandler::Handle(){
 }
 
 void MessageHandler::ListNewsgroups(string answer) {
-    WriteInt(conn, static_cast<int>(Protocol::ANS_LIST_NG));
-    WriteInt(conn, static_cast<int>(Protocol::PAR_NUM));
-    WriteString(conn, " #numbOfGroups# "); //TODO: Return actual number of groups
-    WriteInt(conn, static_cast<int>(Protocol::PAR_STRING));
     answer = database->ListNewsgroups();
+    
+    WriteProtocol(conn, Protocol::ANS_LIST_NG);
+    WriteProtocol(conn,Protocol::PAR_NUM);
+    WriteInt(conn, database->NewsGroupNumber()); //TODO: Return actual number of groups
+    WriteProtocol(conn, Protocol::PAR_STRING);
+    WriteInt(conn, answer.length());
+    for(char x :answer){
+        WriteChar(conn, x);
+    };
+    
     cout << "com_list_ng"<< endl;
     cout << "answer = "<< answer << endl;
-    WriteString(conn, "here is the answer: ");
-    WriteString(conn, answer);
-    WriteInt(conn, static_cast<int>(Protocol::ANS_END));
-    WriteDollar(conn);
+    WriteProtocol(conn, Protocol::ANS_END);
 }
 
 void MessageHandler::CreateNewsgroup() {
     cout << "com_create_ng"<< endl;
-    database->CreateNewsgroup("newsgroup");
-    WriteInt(conn, static_cast<int>(Protocol::ANS_CREATE_NG));
-    WriteInt(conn, static_cast<int>(Protocol::ANS_ACK));
-    WriteInt(conn, static_cast<int>(Protocol::ANS_END));
-    WriteString(conn, database->ListNewsgroups());
-    WriteDollar(conn);
+    Protocol p = ReadProtocol(conn);
+    string temp = "";
+    int size = ReadNumber(conn);
+    for(int i = 0; i < size; i++){
+        temp += conn->read();
+    }
+    database->CreateNewsgroup(temp);
+    cout << "news group name: " << temp << endl;
+    WriteProtocol(conn,Protocol::ANS_CREATE_NG);
+    WriteProtocol(conn, Protocol::ANS_ACK);
+    WriteProtocol(conn, Protocol::ANS_END);
 }
 
 void MessageHandler::DeleteNewsgroup() {

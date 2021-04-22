@@ -9,6 +9,7 @@ class Database {
     public:
         virtual ~Database() =default;
         virtual string ListNewsgroups() = 0;
+        virtual int NewsGroupNumber() = 0;
         virtual void CreateNewsgroup(string title) = 0;
         virtual void DeleteNewsgroup(int id) = 0; 
         virtual string ListArticles(int id) = 0;
