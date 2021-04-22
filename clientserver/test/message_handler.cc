@@ -136,56 +136,94 @@ void MessageHandler::CreateNewsgroup() {
 }
 
 void MessageHandler::DeleteNewsgroup() {
-    WriteInt(conn, static_cast<int>(Protocol::ANS_DELETE_NG));
-    WriteInt(conn, static_cast<int>(Protocol::ANS_ACK));
-    WriteInt(conn, static_cast<int>(Protocol::ANS_END));
+    Protocol p = ReadProtocol(conn);
+    if(p == Protocol::PAR_NUM) cout << "alles gut" << endl;
+    int id = ReadNumber(conn);
+    cout << "id : " << id << endl;
+    WriteProtocol(conn, Protocol::ANS_DELETE_NG);
+    WriteProtocol(conn, Protocol::ANS_ACK);
+    WriteProtocol(conn, Protocol::ANS_END);
     cout << "com_delete_ng"<< endl;
-    database->DeleteNewsgroup(1);
-    WriteString(conn, "deleted news group");
-    WriteDollar(conn);
+    database->DeleteNewsgroup(id);
 }
 
 void MessageHandler::ListArticle(string answer) {
-    WriteInt(conn, static_cast<int>(Protocol::ANS_LIST_ART));
-    WriteInt(conn, static_cast<int>(Protocol::ANS_ACK));
-    WriteInt(conn, static_cast<int>(Protocol::PAR_NUM));
-    WriteInt(conn, static_cast<int>(Protocol::PAR_STRING));
-    answer = database->ListArticles(0);
+    Protocol p = ReadProtocol(conn);
+    if(p == Protocol::PAR_NUM) cout << "alles gut" << endl;
+    int id = ReadNumber(conn);
+    cout << "id : " << id << endl;
+    answer = database->ListArticles(id);
     cout << "com_list_art"<< endl;
-    WriteString(conn, answer);
-    WriteInt(conn, static_cast<int>(Protocol::ANS_END));
-    WriteDollar(conn);
+    WriteProtocol(conn, Protocol::ANS_LIST_ART);
+    WriteProtocol(conn, Protocol::ANS_ACK);
+    WriteProtocol(conn, Protocol::PAR_NUM);
+    WriteInt(conn, database->ArticleNumber(id));
+    WriteProtocol(conn, Protocol::PAR_STRING);
+    WriteInt(conn, answer.length());
+    for(char x :answer){
+        WriteChar(conn, x);
+    };
+    WriteProtocol(conn, Protocol::ANS_END);
 }
 
 void MessageHandler::CreateArticle() {
-    WriteInt(conn, static_cast<int>(Protocol::ANS_CREATE_ART));
-    WriteInt(conn, static_cast<int>(Protocol::ANS_ACK));
-    WriteInt(conn, static_cast<int>(Protocol::ANS_END));
+    Protocol p = ReadProtocol(conn);
+    int id;
+    int size;
+    string title = "";
+    string author = "";
+    string text = "";
+    if(p == Protocol::PAR_NUM) cout << "alles gut" << endl;
+    id = ReadNumber(conn);
+    cout << "id : " << id << endl;
     cout << "com_create_art"<< endl;
-    database->CreateArticle(0, "jorgen", "life_of_jorgen", "he a good boy" );
-    WriteString(conn, "created article");
-    WriteDollar(conn);
+    p = ReadProtocol(conn);
+    if(p == Protocol::PAR_STRING) cout << "alles gut" << endl;
+    size = ReadNumber(conn); 
+    for(int i = 0; i < size; i++){
+        title += conn->read();
+    }
+    cout << "title done" << endl;
+    p = ReadProtocol(conn);
+    if(p == Protocol::PAR_STRING) cout << "alles gut" << endl;
+    size = ReadNumber(conn); 
+    for(int i = 0; i < size; i++){
+        author += conn->read();
+    }
+    cout << "author done" << endl;
+    p = ReadProtocol(conn);
+    if(p == Protocol::PAR_STRING) cout << "alles gut" << endl;
+    size = ReadNumber(conn); 
+    for(int i = 0; i < size; i++){
+        text += conn->read();
+    }
+    cout << "text done" << endl;
+    database->CreateArticle(id, author, title, text );
+    WriteProtocol(conn, Protocol::ANS_CREATE_ART);
+    WriteProtocol(conn, Protocol::ANS_ACK);
+    WriteProtocol(conn, Protocol::ANS_END);
+    
 }
 
 void MessageHandler::DeleteArticle() {
-    WriteInt(conn, static_cast<int>(Protocol::ANS_DELETE_ART));
-    WriteInt(conn, static_cast<int>(Protocol::ANS_ACK));
-    WriteInt(conn, static_cast<int>(Protocol::ANS_END));
+    WriteProtocol(conn, Protocol::ANS_DELETE_ART);
+    WriteProtocol(conn, Protocol::ANS_ACK);
+    WriteProtocol(conn, Protocol::ANS_END);
     cout << "com_delete_art"<< endl;
     database->DeleteArticle(0,3);
     WriteString(conn, "deleted news group");
 }
 
 void MessageHandler::GetArticle(string answer) {
-    WriteInt(conn, static_cast<int>(Protocol::ANS_GET_ART));
-    WriteInt(conn, static_cast<int>(Protocol::ANS_ACK));
-    WriteInt(conn, static_cast<int>(Protocol::PAR_STRING));
-    WriteInt(conn, static_cast<int>(Protocol::PAR_STRING));
-    WriteInt(conn, static_cast<int>(Protocol::PAR_STRING));
+    WriteProtocol(conn, Protocol::ANS_GET_ART);
+    WriteProtocol(conn, Protocol::ANS_ACK);
+    WriteProtocol(conn, Protocol::PAR_STRING);
+    WriteProtocol(conn, Protocol::PAR_STRING);
+    WriteProtocol(conn, Protocol::PAR_STRING);
     answer = database->GetArticle(0,3);
     cout << "com_list_ng"<< endl;
     WriteString(conn, answer);
-    WriteInt(conn, static_cast<int>(Protocol::ANS_END));
+    WriteProtocol(conn, Protocol::ANS_END);
 }
 
 

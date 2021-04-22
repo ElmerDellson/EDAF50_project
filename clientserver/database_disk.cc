@@ -18,6 +18,10 @@ int DatabaseDisk::NewsGroupNumber(){
     return newsgroupsTitles.size();
 }
 
+int DatabaseDisk::ArticleNumber(int id){
+    return newsgroupsarticles.at(id).size();
+}
+
 void DatabaseDisk::CreateNewsgroup(string title) {
     int temp = currId++;
     newsgroupsTitles.insert(pair<int, string>(temp,title));

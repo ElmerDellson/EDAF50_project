@@ -15,6 +15,7 @@ class DatabaseMemory: public Database {
         ~DatabaseMemory() =default;
         string ListNewsgroups() override;
         int NewsGroupNumber() override;
+        int ArticleNumber(int id) override;
         void CreateNewsgroup(string title) override;
         void DeleteNewsgroup(int id) override; 
         string ListArticles(int id) override;

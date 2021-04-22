@@ -18,6 +18,10 @@ int DatabaseMemory::NewsGroupNumber(){
     return newsgroupsTitles.size();
 }
 
+int DatabaseMemory::ArticleNumber(int id){
+    return newsgroupsarticles.at(id).size();
+}
+
 void DatabaseMemory::CreateNewsgroup(string title) {
     int temp = currId++;
     newsgroupsTitles.insert(pair<int, string>(temp,title));

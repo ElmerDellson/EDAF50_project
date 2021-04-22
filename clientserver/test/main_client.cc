@@ -122,15 +122,14 @@ void deleteNewsGroups(const Connection& conn){
     Protocol p;
     p = static_cast<Protocol>(readChar(conn));
     while(p != Protocol::ANS_END){
-        if(p == Protocol::ANS_CREATE_NG){
-            p = static_cast<Protocol>(readChar(conn));
-        }
         if( p == Protocol::ANS_ACK){
             cout << "deleted succesfully" << endl;
+            p = static_cast<Protocol>(readChar(conn));
         }
         if( p == Protocol::ANS_NAK){
             cout << "things went to shit" << endl;
             cout << "error message" << endl;
+            p = static_cast<Protocol>(readChar(conn));
         }
     } 
 }
@@ -138,27 +137,40 @@ void listArticles(const Connection& conn){
     Protocol p;
     p = static_cast<Protocol>(readChar(conn));
     int num;
-    vector<string> v;
+    cout << "i run" << endl;
     while(p != Protocol::ANS_END){
-        if(p == Protocol::PAR_NUM){
-            num = ReadNumber(conn);
+        if(p == Protocol::ANS_ACK){
             p = static_cast<Protocol>(readChar(conn));
-        }
-        if(p == Protocol::PAR_STRING){
-            int i = ReadNumber(conn);
-            string temp = "";
-            for(int j = 0; j<i; j++){
-                temp += readChar(conn);
+            if(p == Protocol::PAR_NUM){
+                num = ReadNumber(conn);
+                cout << "num: " << num << endl;
+                p = static_cast<Protocol>(readChar(conn));
             }
-            v.push_back(temp);
-            p = static_cast<Protocol>(readChar(conn));
+            if(p == Protocol::PAR_STRING){
+                int i = ReadNumber(conn);
+                string temp = "";
+                for(int j = 0; j<i; j++){
+                    temp += readChar(conn);
+                }
+                cout << "temp: " << temp << endl;
+                p = static_cast<Protocol>(readChar(conn));
+            }    
         }
         if(p == Protocol::ANS_NAK){
             cout << "error message" << endl;
         }
     }
 }
-void createArticle(const Connection& conn){}
+void createArticle(const Connection& conn){
+    Protocol p;
+    p = static_cast<Protocol>(readChar(conn));
+    while (p != Protocol::ANS_END){
+        if(p == Protocol::ANS_ACK){
+            cout << "article created successfuly" << endl;
+            p = static_cast<Protocol>(readChar(conn));
+        } 
+    }
+}
 void deleteArticle(const Connection& conn){}
 void getArticle(const Connection& conn){}
 
@@ -204,7 +216,11 @@ int app(const Connection& conn)
     cout << "Get article : 7" << endl;
 
     int nbr;
+    int id;
     string temp;
+    string title;
+    string author;
+    string text;
         while (cin >> nbr) {
             switch (nbr)
             {
@@ -218,12 +234,27 @@ int app(const Connection& conn)
                 break;
             case 3:
                 writeProtocol(conn, Protocol::COM_DELETE_NG);
+                writeProtocol(conn, Protocol::PAR_NUM);
+                cin >> id;
+                writeNumber(conn, id);
                 break;
             case 4:
                 writeProtocol(conn, Protocol::COM_LIST_ART);
+                writeProtocol(conn, Protocol::PAR_NUM);
+                cin >> id;
+                writeNumber(conn, id);
                 break;
             case 5:
                 writeProtocol(conn, Protocol::COM_CREATE_ART);
+                cin >> id;
+                cin >> title;
+                cin >> author;
+                cin >> text;
+                writeProtocol(conn, Protocol::PAR_NUM);
+                writeNumber(conn, id);
+                writeString(conn, title);
+                writeString(conn, author);
+                writeString(conn, text);
                 break;
             case 6:
                 writeProtocol(conn, Protocol::COM_DELETE_ART);
