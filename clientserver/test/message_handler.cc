@@ -190,36 +190,38 @@ void MessageHandler::ListArticle(string answer) {
 
 void MessageHandler::CreateArticle() {
     Protocol p = ReadProtocol(conn);
+    if(p == Protocol::PAR_NUM) cout << "par_num recieved" << endl;
     int id;
     int size;
     string title = "";
     string author = "";
     string text = "";
-    if(p == Protocol::PAR_NUM) cout << "alles gut" << endl;
     id = ReadNumber(conn);
     cout << "id : " << id << endl;
     cout << "com_create_art"<< endl;
     p = ReadProtocol(conn);
-    if(p == Protocol::PAR_STRING) cout << "alles gut" << endl;
+    if(p == Protocol::PAR_STRING) cout << "Par_string 1 recieved" << endl;
     size = ReadNumber(conn); 
     for(int i = 0; i < size; i++){
         title += conn->read();
     }
     cout << "title done" << endl;
     p = ReadProtocol(conn);
-    if(p == Protocol::PAR_STRING) cout << "alles gut" << endl;
+    if(p == Protocol::PAR_STRING) cout << "Par_string 2 recieved" << endl;
     size = ReadNumber(conn); 
     for(int i = 0; i < size; i++){
         author += conn->read();
     }
     cout << "author done" << endl;
     p = ReadProtocol(conn);
-    if(p == Protocol::PAR_STRING) cout << "alles gut" << endl;
+    if(p == Protocol::PAR_STRING) cout << "Par_string 3 recieved" << endl;
     size = ReadNumber(conn); 
     for(int i = 0; i < size; i++){
         text += conn->read();
     }
     cout << "text done" << endl;
+    p = ReadProtocol(conn);
+    if(p == Protocol::COM_END)  cout << "com_end recieved " << endl;
     database->CreateArticle(id, author, title, text );
     WriteProtocol(conn, Protocol::ANS_CREATE_ART);
     WriteProtocol(conn, Protocol::ANS_ACK);
@@ -239,6 +241,8 @@ void MessageHandler::DeleteArticle() {
     if(p == Protocol::PAR_NUM) cout << "alles gut" << endl;
     id2 = ReadNumber(conn);
     cout << "id2 : " << id2 << endl;
+    p = ReadProtocol(conn);
+    if(p == Protocol::COM_END)  cout << "com_end recieved " << endl;
     database->DeleteArticle(id,id2);
     WriteProtocol(conn, Protocol::ANS_DELETE_ART);
     WriteProtocol(conn, Protocol::ANS_ACK);
@@ -258,6 +262,8 @@ void MessageHandler::GetArticle(string answer) {
     if(p == Protocol::PAR_NUM) cout << "alles gut" << endl;
     id2 = ReadNumber(conn);
     cout << "id2 : " << id2 << endl;
+    p = ReadProtocol(conn);
+    if(p == Protocol::COM_END)  cout << "com_end recieved " << endl;
     WriteProtocol(conn, Protocol::ANS_GET_ART);
     WriteProtocol(conn, Protocol::ANS_ACK);
     answer = database->GetArticleTitle(id,id2);
