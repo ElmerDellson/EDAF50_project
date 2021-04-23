@@ -11,6 +11,8 @@ string DatabaseDisk::ListNewsgroups() {
         result.append(x.second);
         result.append(",");
     }
+
+    cout << "ListNewsGroup DatabaseDisk" << endl;
     return result;
 }
 
@@ -24,6 +26,7 @@ void DatabaseDisk::CreateNewsgroup(string title) {
 void DatabaseDisk::DeleteNewsgroup(int id) {
     newsgroupsTitles.erase(id);
     newsgroupsarticles.erase(id);
+    cout << "DeleteNewsGroup DatabaseDisk" << endl;
 } 
 
 string DatabaseDisk::ListArticles(int id) {
@@ -34,17 +37,22 @@ string DatabaseDisk::ListArticles(int id) {
         result.append(x.getTitle());
         result.append(",");
     }
+
+    cout << "ListArticles DatabaseDisk" << endl;
     return result;
 }
 
 void DatabaseDisk::CreateArticle(int id, string author, string title, string text) {
     int temp = currId ++;
     newsgroupsarticles.at(id).push_back(Article(temp, title, author, text));
+
+    cout << "CreateArticles DatabaseDisk" << endl;
 }
 
 void DatabaseDisk::DeleteArticle(int gid, int aid) {
-           vector<Article>& v = newsgroupsarticles.at(gid);
-           v.erase(remove_if(v.begin(), v.end(), [& aid](Article x){return x.getId() == aid;})); 
+    vector<Article>& v = newsgroupsarticles.at(gid);
+    v.erase(remove_if(v.begin(), v.end(), [& aid](Article x){return x.getId() == aid;})); 
+    cout << "DeleteArticle DatabaseDisk" << endl;
 }
 
 string DatabaseDisk::GetArticle(int gid, int aid) {
@@ -54,5 +62,7 @@ string DatabaseDisk::GetArticle(int gid, int aid) {
             result += x.getAuthor() + " , " +  x.getTitle() + " , " + x.getArticle();
         }
     }
+
+    cout << "GetArticle DatabaseDisk" << endl;
     return result;
 }

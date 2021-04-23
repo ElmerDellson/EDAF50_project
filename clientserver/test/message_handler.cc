@@ -54,10 +54,9 @@ void MessageHandler::WriteDollar(const shared_ptr<Connection>& conn){
 bool MessageHandler::Handle(){
     try {
         Protocol nbr = static_cast<Protocol>(ReadNumber(conn));
-        string answer = "";
         switch (nbr) {
             case Protocol::COM_LIST_NG:
-                ListNewsgroups(answer);
+                ListNewsgroups();
                 break;
             case Protocol::COM_CREATE_NG:
                 CreateNewsgroup();
@@ -66,7 +65,7 @@ bool MessageHandler::Handle(){
                 DeleteNewsgroup();
                 break;
             case Protocol::COM_LIST_ART:
-                ListArticle(answer);
+                ListArticle();
                 break;
             case Protocol::COM_CREATE_ART:
                 CreateArticle();
@@ -75,7 +74,7 @@ bool MessageHandler::Handle(){
                 DeleteArticle();
                 break;
             case Protocol::COM_GET_ART:
-                GetArticle(answer);
+                GetArticle();
                 break;
             default:
                 cout << "Something went wrong!" << endl;
@@ -88,7 +87,8 @@ bool MessageHandler::Handle(){
     }
 }
 
-void MessageHandler::ListNewsgroups(string answer) {
+void MessageHandler::ListNewsgroups() {
+    string answer = "";
     WriteInt(conn, static_cast<int>(Protocol::ANS_LIST_NG));
     WriteInt(conn, static_cast<int>(Protocol::PAR_NUM));
     WriteString(conn, " #numbOfGroups# "); //TODO: Return actual number of groups
@@ -122,7 +122,8 @@ void MessageHandler::DeleteNewsgroup() {
     WriteDollar(conn);
 }
 
-void MessageHandler::ListArticle(string answer) {
+void MessageHandler::ListArticle() {
+    string answer = "";
     WriteInt(conn, static_cast<int>(Protocol::ANS_LIST_ART));
     WriteInt(conn, static_cast<int>(Protocol::ANS_ACK));
     WriteInt(conn, static_cast<int>(Protocol::PAR_NUM));
@@ -153,7 +154,8 @@ void MessageHandler::DeleteArticle() {
     WriteString(conn, "deleted news group");
 }
 
-void MessageHandler::GetArticle(string answer) {
+void MessageHandler::GetArticle() {
+    string answer = "";
     WriteInt(conn, static_cast<int>(Protocol::ANS_GET_ART));
     WriteInt(conn, static_cast<int>(Protocol::ANS_ACK));
     WriteInt(conn, static_cast<int>(Protocol::PAR_STRING));
