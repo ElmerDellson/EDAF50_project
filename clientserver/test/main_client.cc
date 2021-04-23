@@ -39,6 +39,8 @@ void writeString(const Connection& conn, string s)
         for(char c: s){
             write(conn, c);
         }
+
+        cout << "Delete this string" << endl;
 }
 
 /*
