@@ -13,12 +13,12 @@ class DatabaseMemory: public Database {
     public:
         DatabaseMemory();
         ~DatabaseMemory() =default;
-        string ListNewsgroups() override;
+        vector<string> ListNewsgroups() override;
         int NewsGroupNumber() override;
         int ArticleNumber(int id) override;
         void CreateNewsgroup(string title) override;
         void DeleteNewsgroup(int id) override; 
-        string ListArticles(int id) override;
+        vector<string> ListArticles(int id) override;
         void CreateArticle(int id, string author, string title, string text) override;
         void DeleteArticle(int gid, int aid) override;
         string GetArticleTitle(int gid, int aid) override;

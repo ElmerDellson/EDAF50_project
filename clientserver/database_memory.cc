@@ -1,15 +1,14 @@
 #include "database_memory.h"
 #include <algorithm>
+#include <vector>
 
 DatabaseMemory::DatabaseMemory() { }
 
-string DatabaseMemory::ListNewsgroups() {
-    string result = "";
+vector<string> DatabaseMemory::ListNewsgroups() {
+    vector<string> result;
     for(pair<int , string> x : newsgroupsTitles){
-        result.append(to_string(x.first));
-        result.append(",");
-        result.append(x.second);
-        result.append(",");
+        result.push_back(to_string(x.first));
+        result.push_back(x.second);
     }
     return result;
 }
@@ -33,13 +32,13 @@ void DatabaseMemory::DeleteNewsgroup(int id) {
     newsgroupsarticles.erase(id);
 } 
 
-string DatabaseMemory::ListArticles(int id) {
-    string result = "";
+vector<string> DatabaseMemory::ListArticles(int id) {
+    vector<string> result;
     for(Article x : newsgroupsarticles.at(id)){
-        result.append(to_string(x.getId()));
-        result.append(",");
-        result.append(x.getTitle());
-        result.append(",");
+        result.push_back(to_string(x.getId()));
+        
+        result.push_back(x.getTitle());
+        
     }
     return result;
 }

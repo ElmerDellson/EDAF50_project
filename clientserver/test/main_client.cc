@@ -265,23 +265,27 @@ int app(const Connection& conn)
             {
             case 1:
                 writeProtocol(conn, Protocol::COM_LIST_NG);
+                writeProtocol(conn, Protocol::COM_END);
                 break;
             case 2:
                 writeProtocol(conn, Protocol::COM_CREATE_NG);
                 cin >> temp;
                 writeString(conn, temp);
+                writeProtocol(conn, Protocol::COM_END);
                 break;
             case 3:
                 writeProtocol(conn, Protocol::COM_DELETE_NG);
                 writeProtocol(conn, Protocol::PAR_NUM);
                 cin >> id;
                 writeNumber(conn, id);
+                writeProtocol(conn, Protocol::COM_END);
                 break;
             case 4:
                 writeProtocol(conn, Protocol::COM_LIST_ART);
                 writeProtocol(conn, Protocol::PAR_NUM);
                 cin >> id;
                 writeNumber(conn, id);
+                writeProtocol(conn, Protocol::COM_END);
                 break;
             case 5:
                 writeProtocol(conn, Protocol::COM_CREATE_ART);
@@ -294,6 +298,7 @@ int app(const Connection& conn)
                 writeString(conn, title);
                 writeString(conn, author);
                 writeString(conn, text);
+                writeProtocol(conn, Protocol::COM_END);
                 break;
             case 6:
                 writeProtocol(conn, Protocol::COM_DELETE_ART);
@@ -303,6 +308,7 @@ int app(const Connection& conn)
                 writeProtocol(conn, Protocol::PAR_NUM);
                 cin >> id;
                 writeNumber(conn, id);
+                writeProtocol(conn, Protocol::COM_END);
                 break;
             case 7:
                 writeProtocol(conn, Protocol::COM_GET_ART);
@@ -312,6 +318,7 @@ int app(const Connection& conn)
                 writeProtocol(conn, Protocol::PAR_NUM);
                 cin >> id;
                 writeNumber(conn, id);
+                writeProtocol(conn, Protocol::COM_END);
                 break;
             
             default:

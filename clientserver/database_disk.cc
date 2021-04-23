@@ -3,16 +3,12 @@
 
 DatabaseDisk::DatabaseDisk() { }
 
-string DatabaseDisk::ListNewsgroups() {
-    string result = "";
+vector<string> DatabaseDisk::ListNewsgroups() {
+    vector<string> result;
     for(pair<int , string> x : newsgroupsTitles){
-        result.append(to_string(x.first));
-        result.append(",");
-        result.append(x.second);
-        result.append(",");
+        result.push_back(to_string(x.first));
+        result.push_back(x.second);
     }
-
-    cout << "ListNewsGroup DatabaseDisk" << endl;
     return result;
 }
 
@@ -37,13 +33,13 @@ void DatabaseDisk::DeleteNewsgroup(int id) {
     cout << "DeleteNewsGroup DatabaseDisk" << endl;
 } 
 
-string DatabaseDisk::ListArticles(int id) {
-    string result = "";
+vector<string> DatabaseDisk::ListArticles(int id) {
+    vector<string> result;
     for(Article x : newsgroupsarticles.at(id)){
-        result.append(to_string(x.getId()));
-        result.append(",");
-        result.append(x.getTitle());
-        result.append(",");
+        result.push_back(to_string(x.getId()));
+        
+        result.push_back(x.getTitle());
+        
     }
 
     cout << "ListArticles DatabaseDisk" << endl;

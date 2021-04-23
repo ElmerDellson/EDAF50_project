@@ -104,16 +104,22 @@ bool MessageHandler::Handle(){
 }
 
 void MessageHandler::ListNewsgroups(string answer) {
-    answer = database->ListNewsgroups();
-    
+    vector<string> vec = database->ListNewsgroups();
+    Protocol p = ReadProtocol(conn);
+    if(p == Protocol::COM_END)  cout << "alles gut " << endl;
     WriteProtocol(conn, Protocol::ANS_LIST_NG);
     WriteProtocol(conn,Protocol::PAR_NUM);
     WriteInt(conn, database->NewsGroupNumber()); //TODO: Return actual number of groups
-    WriteProtocol(conn, Protocol::PAR_STRING);
-    WriteInt(conn, answer.length());
-    for(char x :answer){
-        WriteChar(conn, x);
-    };
+    for (int i = 0; i < database->NewsGroupNumber(); i++){
+        WriteProtocol(conn,Protocol::PAR_NUM);
+        WriteInt(conn, stoi(vec.at(i*2)));
+        WriteProtocol(conn, Protocol::PAR_STRING);
+        WriteInt(conn, vec.at((i*2)+1).length());
+        for(char x :vec.at((i*2)+1)){
+            WriteChar(conn, x);
+        };
+    }
+    
     
     cout << "com_list_ng"<< endl;
     cout << "answer = "<< answer << endl;
@@ -123,46 +129,62 @@ void MessageHandler::ListNewsgroups(string answer) {
 void MessageHandler::CreateNewsgroup() {
     cout << "com_create_ng"<< endl;
     Protocol p = ReadProtocol(conn);
-    string temp = "";
-    int size = ReadNumber(conn);
-    for(int i = 0; i < size; i++){
-        temp += conn->read();
+    while(p != Protocol::COM_END){
+        string temp = "";
+        int size = ReadNumber(conn);
+        for(int i = 0; i < size; i++){
+            temp += conn->read();
+        }
+        database->CreateNewsgroup(temp);
+        cout << "news group name: " << temp << endl;
+        WriteProtocol(conn,Protocol::ANS_CREATE_NG);
+        WriteProtocol(conn, Protocol::ANS_ACK);
+        WriteProtocol(conn, Protocol::ANS_END);
+        p = ReadProtocol(conn);
     }
-    database->CreateNewsgroup(temp);
-    cout << "news group name: " << temp << endl;
-    WriteProtocol(conn,Protocol::ANS_CREATE_NG);
-    WriteProtocol(conn, Protocol::ANS_ACK);
-    WriteProtocol(conn, Protocol::ANS_END);
+    if(p ==Protocol::COM_END) cout << "recieved com_end" << endl;
+    
 }
 
 void MessageHandler::DeleteNewsgroup() {
     Protocol p = ReadProtocol(conn);
-    if(p == Protocol::PAR_NUM) cout << "alles gut" << endl;
-    int id = ReadNumber(conn);
-    cout << "id : " << id << endl;
-    WriteProtocol(conn, Protocol::ANS_DELETE_NG);
-    WriteProtocol(conn, Protocol::ANS_ACK);
-    WriteProtocol(conn, Protocol::ANS_END);
-    cout << "com_delete_ng"<< endl;
-    database->DeleteNewsgroup(id);
+    while(p != Protocol::COM_END){
+        if(p == Protocol::PAR_NUM) cout << "alles gut" << endl;
+        int id = ReadNumber(conn);
+        cout << "id : " << id << endl;
+        WriteProtocol(conn, Protocol::ANS_DELETE_NG);
+        WriteProtocol(conn, Protocol::ANS_ACK);
+        WriteProtocol(conn, Protocol::ANS_END);
+        cout << "com_delete_ng"<< endl;
+        database->DeleteNewsgroup(id);
+        p = ReadProtocol(conn);
+    }
+    
 }
 
 void MessageHandler::ListArticle(string answer) {
     Protocol p = ReadProtocol(conn);
-    if(p == Protocol::PAR_NUM) cout << "alles gut" << endl;
+    
+    if(p == Protocol::PAR_NUM) cout << "par_num recieved" << endl;
     int id = ReadNumber(conn);
     cout << "id : " << id << endl;
-    answer = database->ListArticles(id);
+    p = ReadProtocol(conn);
+    if(p == Protocol::COM_END)  cout << "com_end recieved " << endl;
+    vector<string> vec = database->ListArticles(id);
     cout << "com_list_art"<< endl;
     WriteProtocol(conn, Protocol::ANS_LIST_ART);
     WriteProtocol(conn, Protocol::ANS_ACK);
-    WriteProtocol(conn, Protocol::PAR_NUM);
-    WriteInt(conn, database->ArticleNumber(id));
-    WriteProtocol(conn, Protocol::PAR_STRING);
-    WriteInt(conn, answer.length());
-    for(char x :answer){
-        WriteChar(conn, x);
-    };
+    WriteProtocol(conn,Protocol::PAR_NUM);
+    WriteInt(conn, database->ArticleNumber(id)); //TODO: Return actual number of groups
+    for (int i = 0; i < database->ArticleNumber(id); i++){
+        WriteProtocol(conn,Protocol::PAR_NUM);
+        WriteInt(conn, stoi(vec.at(i*2)));
+        WriteProtocol(conn, Protocol::PAR_STRING);
+        WriteInt(conn, vec.at((i*2)+1).length());
+        for(char x :vec.at((i*2)+1)){
+            WriteChar(conn, x);
+        };
+    }
     WriteProtocol(conn, Protocol::ANS_END);
 }
 
