@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
         auto conn = server.waitForActivity();
         MessageHandler mh{conn, db};
         if (conn != nullptr) {
-            if(!mh.Handle()) {
+            if (!mh.Handle()) {
                 server.deregisterConnection(conn);
                 cout << "Client closed connection" << endl;
             }
