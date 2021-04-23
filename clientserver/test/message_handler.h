@@ -22,13 +22,13 @@ class MessageHandler {
         void WriteChar(const shared_ptr<Connection>& conn, const char& c);
         bool Handle();
     private:
-        void ListNewsgroups();
+        void ListNewsgroups(string);
         void CreateNewsgroup();
         void DeleteNewsgroup();
-        void ListArticle();
+        void ListArticle(string);
         void CreateArticle();
         void DeleteArticle();
-        void GetArticle();
+        void GetArticle(string);
         void WriteDollar(const shared_ptr<Connection>& conn);
         Database* database;
         shared_ptr<Connection> conn;
