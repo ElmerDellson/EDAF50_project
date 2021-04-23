@@ -1,0 +1,8 @@
+*.o
+*.d
+
+main_client
+main_server
+myclient
+myserver
+test
