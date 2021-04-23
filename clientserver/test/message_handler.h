@@ -6,6 +6,7 @@
 #include "database_disk.h"
 #include "connection.h"
 #include "server.h"
+#include "protocol.h"
 
 using namespace std;
 
@@ -14,8 +15,11 @@ class MessageHandler {
         //Message_handler();
         MessageHandler(shared_ptr<Connection>& conn, Database* db);
         int ReadNumber(const shared_ptr<Connection>& conn);
+        Protocol ReadProtocol(const shared_ptr<Connection>& conn);
         void WriteString(const shared_ptr<Connection>& conn, const string& s);
-        void WriteInt(const shared_ptr<Connection>& conn, const int& s);
+        void WriteInt(const shared_ptr<Connection>& conn, const int& value);
+        void WriteProtocol(const shared_ptr<Connection>& conn, const Protocol c);
+        void WriteChar(const shared_ptr<Connection>& conn, const char& c);
         bool Handle();
     private:
         void ListNewsgroups();

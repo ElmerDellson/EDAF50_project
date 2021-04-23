@@ -16,6 +16,14 @@ string DatabaseDisk::ListNewsgroups() {
     return result;
 }
 
+int DatabaseDisk::NewsGroupNumber(){
+    return newsgroupsTitles.size();
+}
+
+int DatabaseDisk::ArticleNumber(int id){
+    return newsgroupsarticles.at(id).size();
+}
+
 void DatabaseDisk::CreateNewsgroup(string title) {
     int temp = currId++;
     newsgroupsTitles.insert(pair<int, string>(temp,title));
@@ -55,14 +63,27 @@ void DatabaseDisk::DeleteArticle(int gid, int aid) {
     cout << "DeleteArticle DatabaseDisk" << endl;
 }
 
-string DatabaseDisk::GetArticle(int gid, int aid) {
-    string result = "";
+string DatabaseDisk::GetArticleTitle(int gid, int aid) {
     for(Article x : newsgroupsarticles.at(gid)){
         if(x.getId() == aid){
-            result += x.getAuthor() + " , " +  x.getTitle() + " , " + x.getArticle();
+            return x.getTitle();
         }
     }
-
-    cout << "GetArticle DatabaseDisk" << endl;
-    return result;
+    return "";
+}
+string DatabaseDisk::GetArticleAuthor(int gid, int aid) {
+    for(Article x : newsgroupsarticles.at(gid)){
+        if(x.getId() == aid){
+            return x.getAuthor();
+        }
+    }
+    return "";
+}
+string DatabaseDisk::GetArticleText(int gid, int aid) {
+    for(Article x : newsgroupsarticles.at(gid)){
+        if(x.getId() == aid){
+            return x.getArticle();
+        }
+    }
+    return "";
 }
