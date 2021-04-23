@@ -48,9 +48,9 @@ void MessageHandler::WriteString(const shared_ptr<Connection>& conn, const strin
 void MessageHandler::WriteInt(const shared_ptr<Connection>& conn, const int& value)
 {
     conn->write((value >> 24) & 0xFF);
-        conn->write((value >> 16) & 0xFF);
-        conn->write((value >> 8) & 0xFF);
-        conn->write(value & 0xFF);
+    conn->write((value >> 16) & 0xFF);
+    conn->write((value >> 8) & 0xFF);
+    conn->write(value & 0xFF);
 }
 
 void MessageHandler::WriteProtocol(const shared_ptr<Connection>& conn, const Protocol c){
@@ -109,8 +109,8 @@ void MessageHandler::ListNewsgroups(string answer) {
     if(p == Protocol::COM_END)  cout << "alles gut " << endl;
     WriteProtocol(conn, Protocol::ANS_LIST_NG);
     WriteProtocol(conn,Protocol::PAR_NUM);
-    WriteInt(conn, database->NewsGroupNumber()); //TODO: Return actual number of groups
-    for (int i = 0; i < database->NewsGroupNumber(); i++){
+    WriteInt(conn, database->NoOfNewsGroups()); //TODO: Return actual number of groups
+    for (int i = 0; i < database->NoOfNewsGroups(); i++){
         WriteProtocol(conn,Protocol::PAR_NUM);
         WriteInt(conn, stoi(vec.at(i*2)));
         WriteProtocol(conn, Protocol::PAR_STRING);
@@ -127,38 +127,63 @@ void MessageHandler::ListNewsgroups(string answer) {
 }
 
 void MessageHandler::CreateNewsgroup() {
-    cout << "com_create_ng"<< endl;
+    cout << "COM_CREATE_NG"<< endl;
     Protocol p = ReadProtocol(conn);
-    while(p != Protocol::COM_END){
-        string temp = "";
+    string name{};
+
+    while (p != Protocol::COM_END) {
         int size = ReadNumber(conn);
-        for(int i = 0; i < size; i++){
-            temp += conn->read();
-        }
-        database->CreateNewsgroup(temp);
-        cout << "news group name: " << temp << endl;
-        WriteProtocol(conn,Protocol::ANS_CREATE_NG);
-        WriteProtocol(conn, Protocol::ANS_ACK);
-        WriteProtocol(conn, Protocol::ANS_END);
+
+        for (int i = 0; i < size; i++)
+            name += conn->read();
+
+        cout << "News Group name: " << name << endl;
+        
         p = ReadProtocol(conn);
     }
-    if(p ==Protocol::COM_END) cout << "recieved com_end" << endl;
     
+    cout << "Recieved COM_END" << endl;
+
+    WriteProtocol(conn,Protocol::ANS_CREATE_NG);
+    
+    if (database->CreateNewsgroup(name)) {
+        WriteProtocol(conn, Protocol::ANS_ACK);    
+    } else {
+        WriteProtocol(conn, Protocol::ANS_NAK);
+        WriteProtocol(conn, Protocol::ERR_NG_ALREADY_EXISTS);
+    }
+        
+    WriteProtocol(conn, Protocol::ANS_END);
 }
 
 void MessageHandler::DeleteNewsgroup() {
+    cout << "COM_DELETE_NG"<< endl;
     Protocol p = ReadProtocol(conn);
-    while(p != Protocol::COM_END){
-        if(p == Protocol::PAR_NUM) cout << "alles gut" << endl;
-        int id = ReadNumber(conn);
+    int id{};
+    
+    while (p != Protocol::COM_END){
+        if(p == Protocol::PAR_NUM) 
+            cout << "Recieved PAR_NUM" << endl;
+        
+        id = ReadNumber(conn);
+        
         cout << "id : " << id << endl;
-        WriteProtocol(conn, Protocol::ANS_DELETE_NG);
-        WriteProtocol(conn, Protocol::ANS_ACK);
-        WriteProtocol(conn, Protocol::ANS_END);
-        cout << "com_delete_ng"<< endl;
-        database->DeleteNewsgroup(id);
+        
         p = ReadProtocol(conn);
     }
+
+    cout << "Recieved COM_END" << endl;
+
+    WriteProtocol(conn, Protocol::ANS_DELETE_NG);
+
+    if (database->DeleteNewsgroup(id)) {
+        WriteProtocol(conn, Protocol::ANS_ACK);    
+    } else {
+        WriteProtocol(conn, Protocol::ANS_NAK);
+        WriteProtocol(conn, Protocol::ERR_NG_DOES_NOT_EXIST);
+    }
+    
+    WriteProtocol(conn, Protocol::ANS_END);
     
 }
 
@@ -175,8 +200,8 @@ void MessageHandler::ListArticle(string answer) {
     WriteProtocol(conn, Protocol::ANS_LIST_ART);
     WriteProtocol(conn, Protocol::ANS_ACK);
     WriteProtocol(conn,Protocol::PAR_NUM);
-    WriteInt(conn, database->ArticleNumber(id)); //TODO: Return actual number of groups
-    for (int i = 0; i < database->ArticleNumber(id); i++){
+    WriteInt(conn, database->NoOfArticles(id)); //TODO: Return actual number of groups
+    for (int i = 0; i < database->NoOfArticles(id); i++){
         WriteProtocol(conn,Protocol::PAR_NUM);
         WriteInt(conn, stoi(vec.at(i*2)));
         WriteProtocol(conn, Protocol::PAR_STRING);

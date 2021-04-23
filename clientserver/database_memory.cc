@@ -13,28 +13,44 @@ vector<string> DatabaseMemory::ListNewsgroups() {
     return result;
 }
 
-int DatabaseMemory::NewsGroupNumber(){
+int DatabaseMemory::NoOfNewsGroups(){
     return newsgroupsTitles.size();
 }
 
-int DatabaseMemory::ArticleNumber(int id){
+int DatabaseMemory::NoOfArticles(int id){
     return newsgroupsarticles.at(id).size();
 }
 
-void DatabaseMemory::CreateNewsgroup(string title) {
-    int temp = currId++;
-    newsgroupsTitles.insert(pair<int, string>(temp,title));
-    newsgroupsarticles.emplace(temp, vector<Article>());
+bool DatabaseMemory::CreateNewsgroup(string title) {
+    int id = currId++;
+
+    for (auto it = newsgroupsTitles.begin(); it != newsgroupsTitles.end(); ++it ) {
+        if (it->second == title)
+            return false;
+    }
+
+    newsgroupsTitles.insert(pair<int, string>(id, title));
+    newsgroupsarticles.emplace(id, vector<Article>());
+
+    return true;
 }
 
-void DatabaseMemory::DeleteNewsgroup(int id) {
-    newsgroupsTitles.erase(id);
-    newsgroupsarticles.erase(id);
+bool DatabaseMemory::DeleteNewsgroup(int id) {
+    for (auto it = newsgroupsTitles.begin(); it != newsgroupsTitles.end(); ++it ) {
+        if (it->first == id) {
+            newsgroupsTitles.erase(id);
+            newsgroupsarticles.erase(id);
+            return true;
+        }
+    }
+
+    return false;
 } 
 
 vector<string> DatabaseMemory::ListArticles(int id) {
     vector<string> result;
-    for(Article x : newsgroupsarticles.at(id)){
+
+    for (Article x : newsgroupsarticles.at(id)){
         result.push_back(to_string(x.getId()));
         
         result.push_back(x.getTitle());
@@ -43,14 +59,18 @@ vector<string> DatabaseMemory::ListArticles(int id) {
     return result;
 }
 
-void DatabaseMemory::CreateArticle(int id, string author, string title, string text) {
+bool DatabaseMemory::CreateArticle(int id, string author, string title, string text) {
     int temp = currId ++;
     newsgroupsarticles.at(id).push_back(Article(temp, title, author, text));
+
+    return true;
 }
 
-void DatabaseMemory::DeleteArticle(int gid, int aid) {
+bool DatabaseMemory::DeleteArticle(int gid, int aid) {
            vector<Article>& v = newsgroupsarticles.at(gid);
-           v.erase(remove_if(v.begin(), v.end(), [& aid](Article x){return x.getId() == aid;})); 
+           v.erase(remove_if(v.begin(), v.end(), [& aid](Article x){return x.getId() == aid;}));
+
+           return true;
 }
 
 string DatabaseMemory::GetArticleTitle(int gid, int aid) {

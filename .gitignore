@@ -1,18 +1,11 @@
 main_client
-#!main_client.cc
-
 main_server
-#!main_server.cc
-
 myclient
-#!myclient.cc
-
 myserver
-#!myserver.cc
-
 message_handler
-#!message_handler.cc
-#!message_handler.h
+libclientserver.a
+
+.vscode/
 
 *.o
 *.d

@@ -10,13 +10,13 @@ class Database {
     public:
         virtual ~Database() =default;
         virtual vector<string> ListNewsgroups() = 0;
-        virtual int NewsGroupNumber() = 0;
-        virtual int ArticleNumber(int id) = 0;
-        virtual void CreateNewsgroup(string title) = 0;
-        virtual void DeleteNewsgroup(int id) = 0; 
+        virtual int NoOfNewsGroups() = 0;
+        virtual int NoOfArticles(int id) = 0;
+        virtual bool CreateNewsgroup(string title) = 0;
+        virtual bool DeleteNewsgroup(int id) = 0; 
         virtual vector<string> ListArticles(int id) = 0;
-        virtual void CreateArticle(int id, string author, string title, string text) = 0;
-        virtual void DeleteArticle(int gid, int aid) = 0;
+        virtual bool CreateArticle(int id, string author, string title, string text) = 0;
+        virtual bool DeleteArticle(int gid, int aid) = 0;
         virtual string GetArticleTitle(int gid, int aid) = 0;
         virtual string GetArticleAuthor(int gid, int aid) = 0;
         virtual string GetArticleText(int gid, int aid) = 0;
