@@ -195,21 +195,32 @@ void MessageHandler::ListArticle(string answer) {
     cout << "id : " << id << endl;
     p = ReadProtocol(conn);
     if(p == Protocol::COM_END)  cout << "com_end recieved " << endl;
-    vector<string> vec = database->ListArticles(id);
-    cout << "com_list_art"<< endl;
+    
     WriteProtocol(conn, Protocol::ANS_LIST_ART);
-    WriteProtocol(conn, Protocol::ANS_ACK);
-    WriteProtocol(conn,Protocol::PAR_NUM);
-    WriteInt(conn, database->NoOfArticles(id)); //TODO: Return actual number of groups
-    for (int i = 0; i < database->NoOfArticles(id); i++){
+    try
+    {
+        vector<string> vec = database->ListArticles(id);
+        cout << "com_list_art"<< endl;
+        WriteProtocol(conn, Protocol::ANS_ACK);
         WriteProtocol(conn,Protocol::PAR_NUM);
-        WriteInt(conn, stoi(vec.at(i*2)));
-        WriteProtocol(conn, Protocol::PAR_STRING);
-        WriteInt(conn, vec.at((i*2)+1).length());
-        for(char x :vec.at((i*2)+1)){
-            WriteChar(conn, x);
-        };
+        WriteInt(conn, database->NoOfArticles(id)); //TODO: Return actual number of groups
+        for (int i = 0; i < database->NoOfArticles(id); i++){
+            WriteProtocol(conn,Protocol::PAR_NUM);
+            WriteInt(conn, stoi(vec.at(i*2)));
+            WriteProtocol(conn, Protocol::PAR_STRING);
+            WriteInt(conn, vec.at((i*2)+1).length());
+            for(char x :vec.at((i*2)+1)){
+                WriteChar(conn, x);
+            };
+        }
     }
+    catch(const std::invalid_argument& e)
+    {
+        WriteProtocol(conn, Protocol::ANS_NAK);
+        WriteProtocol(conn, Protocol::ERR_NG_DOES_NOT_EXIST);
+    }
+    
+    
     WriteProtocol(conn, Protocol::ANS_END);
 }
 
@@ -247,9 +258,15 @@ void MessageHandler::CreateArticle() {
     cout << "text done" << endl;
     p = ReadProtocol(conn);
     if(p == Protocol::COM_END)  cout << "com_end recieved " << endl;
-    database->CreateArticle(id, author, title, text );
+    
     WriteProtocol(conn, Protocol::ANS_CREATE_ART);
-    WriteProtocol(conn, Protocol::ANS_ACK);
+    if (database->CreateArticle(id, author, title, text ))
+        WriteProtocol(conn, Protocol::ANS_ACK);
+    else{
+        WriteProtocol(conn, Protocol::ANS_NAK);
+        WriteProtocol(conn, Protocol::ERR_NG_ALREADY_EXISTS);
+    }
+    
     WriteProtocol(conn, Protocol::ANS_END);
     
 }
@@ -257,6 +274,7 @@ void MessageHandler::CreateArticle() {
 void MessageHandler::DeleteArticle() {
     int id;
     int id2;
+    bool result;
     Protocol p = ReadProtocol(conn);
     if(p == Protocol::PAR_NUM) cout << "alles gut" << endl;
     id = ReadNumber(conn);
@@ -268,9 +286,28 @@ void MessageHandler::DeleteArticle() {
     cout << "id2 : " << id2 << endl;
     p = ReadProtocol(conn);
     if(p == Protocol::COM_END)  cout << "com_end recieved " << endl;
-    database->DeleteArticle(id,id2);
+    
     WriteProtocol(conn, Protocol::ANS_DELETE_ART);
-    WriteProtocol(conn, Protocol::ANS_ACK);
+    try
+    {
+        result = database->DeleteArticle(id,id2);
+        if(result){
+        WriteProtocol(conn, Protocol::ANS_ACK);
+        }
+        else{
+            WriteProtocol(conn, Protocol::ANS_NAK);
+            WriteProtocol(conn, Protocol::ERR_ART_DOES_NOT_EXIST);
+        }
+    }
+    catch(const std::invalid_argument& e)
+    {
+        WriteProtocol(conn, Protocol::ANS_NAK);
+        WriteProtocol(conn, Protocol::ERR_NG_DOES_NOT_EXIST);
+    }
+
+    
+    
+    
     WriteProtocol(conn, Protocol::ANS_END);
     
 }
@@ -290,25 +327,43 @@ void MessageHandler::GetArticle(string answer) {
     p = ReadProtocol(conn);
     if(p == Protocol::COM_END)  cout << "com_end recieved " << endl;
     WriteProtocol(conn, Protocol::ANS_GET_ART);
-    WriteProtocol(conn, Protocol::ANS_ACK);
-    answer = database->GetArticleTitle(id,id2);
-    WriteProtocol(conn, Protocol::PAR_STRING);
-    WriteInt(conn, answer.length());
-    for(char x :answer){
-        WriteChar(conn, x);
-    };
-    answer = database->GetArticleAuthor(id,id2);
-    WriteProtocol(conn, Protocol::PAR_STRING);
-    WriteInt(conn, answer.length());
-    for(char x :answer){
-        WriteChar(conn, x);
-    };
-    answer = database->GetArticleText(id,id2);
-    WriteProtocol(conn, Protocol::PAR_STRING);
-    WriteInt(conn, answer.length());
-    for(char x :answer){
-        WriteChar(conn, x);
-    };
+
+    try
+    {
+        answer = database->GetArticleTitle(id,id2);
+        WriteProtocol(conn, Protocol::ANS_ACK);
+        WriteProtocol(conn, Protocol::PAR_STRING);
+        WriteInt(conn, answer.length());
+        for(char x :answer){
+            WriteChar(conn, x);
+        };
+        answer = database->GetArticleAuthor(id,id2);
+        WriteProtocol(conn, Protocol::PAR_STRING);
+        WriteInt(conn, answer.length());
+        for(char x :answer){
+            WriteChar(conn, x);
+        };
+        answer = database->GetArticleText(id,id2);
+        WriteProtocol(conn, Protocol::PAR_STRING);
+        WriteInt(conn, answer.length());
+        for(char x :answer){
+            WriteChar(conn, x);
+        };    
+    }
+    catch(const std::invalid_argument& e)
+    {
+        WriteProtocol(conn, Protocol::ANS_NAK);
+        WriteProtocol(conn, Protocol::ERR_NG_DOES_NOT_EXIST);
+    }
+    
+    catch(const std::out_of_range& e)
+    {
+        WriteProtocol(conn, Protocol::ANS_NAK);
+        WriteProtocol(conn, Protocol::ERR_ART_DOES_NOT_EXIST);
+    }
+
+    
+    
     
     cout << "com_list_ng"<< endl;
     WriteProtocol(conn, Protocol::ANS_END);

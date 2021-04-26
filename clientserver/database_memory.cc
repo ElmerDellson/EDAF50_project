@@ -1,6 +1,7 @@
 #include "database_memory.h"
 #include <algorithm>
 #include <vector>
+#include <stdexcept>
 
 DatabaseMemory::DatabaseMemory() { }
 
@@ -49,6 +50,17 @@ bool DatabaseMemory::DeleteNewsgroup(int id) {
 
 vector<string> DatabaseMemory::ListArticles(int id) {
     vector<string> result;
+    bool foundId = false;
+
+    for (auto it = newsgroupsTitles.begin(); it != newsgroupsTitles.end(); ++it ) {
+        if (it->first == id) {
+            foundId = true;
+        }
+    }
+
+    if(!foundId){
+        throw invalid_argument("nonexsitant id");
+    }
 
     for (Article x : newsgroupsarticles.at(id)){
         result.push_back(to_string(x.getId()));
@@ -61,19 +73,69 @@ vector<string> DatabaseMemory::ListArticles(int id) {
 
 bool DatabaseMemory::CreateArticle(int id, string author, string title, string text) {
     int temp = currId ++;
-    newsgroupsarticles.at(id).push_back(Article(temp, title, author, text));
+    for (auto it = newsgroupsTitles.begin(); it != newsgroupsTitles.end(); ++it ) {
+        if (it->first == id) {
+            newsgroupsarticles.at(id).push_back(Article(temp, title, author, text));
+            return true;
+        }
+    }
 
-    return true;
+    
+
+    return false;
 }
 
 bool DatabaseMemory::DeleteArticle(int gid, int aid) {
-           vector<Article>& v = newsgroupsarticles.at(gid);
-           v.erase(remove_if(v.begin(), v.end(), [& aid](Article x){return x.getId() == aid;}));
+        bool foundId = false;
+        bool foundId2 = false;
 
-           return true;
+        for (auto it = newsgroupsTitles.begin(); it != newsgroupsTitles.end(); ++it ) {
+            if (it->first == gid) {
+                foundId = true;
+            }
+        }
+
+        if(!foundId){
+            throw invalid_argument("nonexsitant group id");
+        }
+        vector<Article>& v = newsgroupsarticles.at(gid);
+
+        for(Article a : v){
+            if( a.getId() == aid)
+                foundId2 = true;
+        }
+
+        if(!foundId2)
+            return false;
+
+        v.erase(remove_if(v.begin(), v.end(), [& aid](Article x){return x.getId() == aid;}));
+
+        return true;
 }
 
 string DatabaseMemory::GetArticleTitle(int gid, int aid) {
+    bool foundId = false;
+    for (auto it = newsgroupsTitles.begin(); it != newsgroupsTitles.end(); ++it ) {
+            if (it->first == gid) {
+                foundId = true;
+            }
+        }
+
+    if(!foundId){
+        throw invalid_argument("nonexsitant group id");
+    }
+
+    vector<Article>& v = newsgroupsarticles.at(gid);
+    
+    for(Article a : v){
+        if( a.getId() == aid)
+            foundId = true;
+    }
+
+    if(!foundId){
+        throw out_of_range("nonexsitant article id");
+    }
+
     for(Article x : newsgroupsarticles.at(gid)){
         if(x.getId() == aid){
             return x.getTitle();
