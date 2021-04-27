@@ -40,7 +40,7 @@ void writeString(const Connection& conn, string s)
             write(conn, c);
         }
 
-        cout << "Delete this string" << endl;
+        
 }
 
 /*
@@ -74,10 +74,16 @@ void listNewsGroups(const Connection& conn){
     Protocol p;
     p = static_cast<Protocol>(readChar(conn));
     int num;
+    if(p == Protocol::PAR_NUM){
+            num = ReadNumber(conn);
+            p = static_cast<Protocol>(readChar(conn));
+            cout << "number of groups: " << num << endl; 
+        }
     //vector<string> v;
     while(p != Protocol::ANS_END){
         if(p == Protocol::PAR_NUM){
             num = ReadNumber(conn);
+            cout << "id: " << num << ", " ;
             p = static_cast<Protocol>(readChar(conn));
         }
         if(p == Protocol::PAR_STRING){
@@ -139,27 +145,37 @@ void listArticles(const Connection& conn){
     Protocol p;
     p = static_cast<Protocol>(readChar(conn));
     int num;
-    cout << "i run" << endl;
+    bool first = true;
     while(p != Protocol::ANS_END){
         if(p == Protocol::ANS_ACK){
             p = static_cast<Protocol>(readChar(conn));
-            if(p == Protocol::PAR_NUM){
-                num = ReadNumber(conn);
-                cout << "num: " << num << endl;
-                p = static_cast<Protocol>(readChar(conn));
-            }
-            if(p == Protocol::PAR_STRING){
-                int i = ReadNumber(conn);
-                string temp = "";
-                for(int j = 0; j<i; j++){
-                    temp += readChar(conn);
+            while (p != Protocol::ANS_END){
+                
+                if(p == Protocol::PAR_NUM){
+                    num = ReadNumber(conn);
+                    if(first){
+                        cout << "number of articles: " << num << endl;
+                        first = false;
+                    }
+                    else{
+                        cout << "id: " << num << ", ";
+                    }
+                    p = static_cast<Protocol>(readChar(conn));
                 }
-                cout << "temp: " << temp << endl;
-                p = static_cast<Protocol>(readChar(conn));
-            }    
+                if(p == Protocol::PAR_STRING){
+                    int i = ReadNumber(conn);
+                    string temp = "";
+                    for(int j = 0; j<i; j++){
+                        temp += readChar(conn);
+                    }
+                    cout  << temp << endl;
+                    p = static_cast<Protocol>(readChar(conn));
+                }
+            }
         }
         if(p == Protocol::ANS_NAK){
             cout << "error message" << endl;
+            p = static_cast<Protocol>(readChar(conn));
         }
     }
 }
@@ -247,6 +263,14 @@ Connection init(int argc, char* argv[])
 int app(const Connection& conn)
 {
     
+    
+
+    int nbr;
+    int id;
+    string temp;
+    string title;
+    string author;
+    string text;
     cout << "Options:" << endl;
     cout << "List newsgroups: 1" << endl;
     cout << "Create newsgroups: 2" << endl;
@@ -255,14 +279,8 @@ int app(const Connection& conn)
     cout << "Create article : 5" << endl;
     cout << "Delete article : 6" << endl;
     cout << "Get article : 7" << endl;
-
-    int nbr;
-    int id;
-    string temp;
-    string title;
-    string author;
-    string text;
         while (cin >> nbr) {
+
             switch (nbr)
             {
             case 1:
@@ -271,6 +289,7 @@ int app(const Connection& conn)
                 break;
             case 2:
                 writeProtocol(conn, Protocol::COM_CREATE_NG);
+                cout << "Please write a title for the news group: ";
                 cin >> temp;
                 writeString(conn, temp);
                 writeProtocol(conn, Protocol::COM_END);
@@ -278,6 +297,7 @@ int app(const Connection& conn)
             case 3:
                 writeProtocol(conn, Protocol::COM_DELETE_NG);
                 writeProtocol(conn, Protocol::PAR_NUM);
+                cout << "id: ";
                 cin >> id;
                 writeNumber(conn, id);
                 writeProtocol(conn, Protocol::COM_END);
@@ -285,15 +305,20 @@ int app(const Connection& conn)
             case 4:
                 writeProtocol(conn, Protocol::COM_LIST_ART);
                 writeProtocol(conn, Protocol::PAR_NUM);
+                cout << "news group id: ";
                 cin >> id;
                 writeNumber(conn, id);
                 writeProtocol(conn, Protocol::COM_END);
                 break;
             case 5:
                 writeProtocol(conn, Protocol::COM_CREATE_ART);
+                cout << "News group id: ";
                 cin >> id;
+                cout << "Title: ";
                 cin >> title;
+                cout << "Author: ";
                 cin >> author;
+                cout << "text: ";
                 cin >> text;
                 writeProtocol(conn, Protocol::PAR_NUM);
                 writeNumber(conn, id);
@@ -305,9 +330,11 @@ int app(const Connection& conn)
             case 6:
                 writeProtocol(conn, Protocol::COM_DELETE_ART);
                 writeProtocol(conn, Protocol::PAR_NUM);
+                cout << "Newsgroup id: ";
                 cin >> id;
                 writeNumber(conn, id);
                 writeProtocol(conn, Protocol::PAR_NUM);
+                cout << "Article id: ";
                 cin >> id;
                 writeNumber(conn, id);
                 writeProtocol(conn, Protocol::COM_END);
@@ -315,9 +342,11 @@ int app(const Connection& conn)
             case 7:
                 writeProtocol(conn, Protocol::COM_GET_ART);
                 writeProtocol(conn, Protocol::PAR_NUM);
+                cout << "Newsgroup id: ";
                 cin >> id;
                 writeNumber(conn, id);
                 writeProtocol(conn, Protocol::PAR_NUM);
+                cout << "Article id: ";
                 cin >> id;
                 writeNumber(conn, id);
                 writeProtocol(conn, Protocol::COM_END);
