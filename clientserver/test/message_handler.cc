@@ -264,7 +264,7 @@ void MessageHandler::CreateArticle() {
         WriteProtocol(conn, Protocol::ANS_ACK);
     else{
         WriteProtocol(conn, Protocol::ANS_NAK);
-        WriteProtocol(conn, Protocol::ERR_NG_ALREADY_EXISTS);
+        WriteProtocol(conn, Protocol::ERR_NG_DOES_NOT_EXIST);
     }
     
     WriteProtocol(conn, Protocol::ANS_END);
