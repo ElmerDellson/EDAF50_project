@@ -19,7 +19,7 @@ int DatabaseMemory::NoOfNewsGroups(){
 }
 
 int DatabaseMemory::NoOfArticles(int id){
-    return newsgroupsarticles.at(id).size();
+    return newsgroupsArticles.at(id).size();
 }
 
 bool DatabaseMemory::CreateNewsgroup(string title) {
@@ -31,7 +31,7 @@ bool DatabaseMemory::CreateNewsgroup(string title) {
     }
 
     newsgroupsTitles.insert(pair<int, string>(id, title));
-    newsgroupsarticles.emplace(id, vector<Article>());
+    newsgroupsArticles.emplace(id, vector<Article>());
 
     return true;
 }
@@ -40,7 +40,7 @@ bool DatabaseMemory::DeleteNewsgroup(int id) {
     for (auto it = newsgroupsTitles.begin(); it != newsgroupsTitles.end(); ++it ) {
         if (it->first == id) {
             newsgroupsTitles.erase(id);
-            newsgroupsarticles.erase(id);
+            newsgroupsArticles.erase(id);
             return true;
         }
     }
@@ -62,7 +62,7 @@ vector<string> DatabaseMemory::ListArticles(int id) {
         throw invalid_argument("nonexsitant id");
     }
 
-    for (Article x : newsgroupsarticles.at(id)){
+    for (Article x : newsgroupsArticles.at(id)){
         result.push_back(to_string(x.getId()));
         
         result.push_back(x.getTitle());
@@ -75,12 +75,10 @@ bool DatabaseMemory::CreateArticle(int id, string author, string title, string t
     int temp = currId ++;
     for (auto it = newsgroupsTitles.begin(); it != newsgroupsTitles.end(); ++it ) {
         if (it->first == id) {
-            newsgroupsarticles.at(id).push_back(Article(temp, title, author, text));
+            newsgroupsArticles.at(id).push_back(Article(temp, title, author, text));
             return true;
         }
     }
-
-    
 
     return false;
 }
@@ -98,7 +96,7 @@ bool DatabaseMemory::DeleteArticle(int gid, int aid) {
         if(!foundId){
             throw invalid_argument("nonexsitant group id");
         }
-        vector<Article>& v = newsgroupsarticles.at(gid);
+        vector<Article>& v = newsgroupsArticles.at(gid);
 
         for(Article a : v){
             if( a.getId() == aid)
@@ -125,7 +123,7 @@ string DatabaseMemory::GetArticleTitle(int gid, int aid) {
         throw invalid_argument("nonexsitant group id");
     }
 
-    vector<Article>& v = newsgroupsarticles.at(gid);
+    vector<Article>& v = newsgroupsArticles.at(gid);
     
     for(Article a : v){
         if( a.getId() == aid)
@@ -136,7 +134,7 @@ string DatabaseMemory::GetArticleTitle(int gid, int aid) {
         throw out_of_range("nonexsitant article id");
     }
 
-    for(Article x : newsgroupsarticles.at(gid)){
+    for(Article x : newsgroupsArticles.at(gid)){
         if(x.getId() == aid){
             return x.getTitle();
         }
@@ -144,7 +142,7 @@ string DatabaseMemory::GetArticleTitle(int gid, int aid) {
     return "";
 }
 string DatabaseMemory::GetArticleAuthor(int gid, int aid) {
-    for(Article x : newsgroupsarticles.at(gid)){
+    for(Article x : newsgroupsArticles.at(gid)){
         if(x.getId() == aid){
             return x.getAuthor();
         }
@@ -152,7 +150,7 @@ string DatabaseMemory::GetArticleAuthor(int gid, int aid) {
     return "";
 }
 string DatabaseMemory::GetArticleText(int gid, int aid) {
-    for(Article x : newsgroupsarticles.at(gid)){
+    for(Article x : newsgroupsArticles.at(gid)){
         if(x.getId() == aid){
             return x.getArticle();
         }

@@ -7,6 +7,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <fstream>
 
 using namespace std;
 
@@ -26,7 +27,8 @@ class DatabaseDisk: public Database {
         string GetArticleAuthor(int gid, int aid) override;
         string GetArticleText(int gid, int aid) override;
     private:
-        map<int, vector<Article>> newsgroupsarticles;
+        string dbPath{"database/"};
+        map<int, vector<Article>> newsgroupsArticles;
         map<int, string> newsgroupsTitles;
         int currId{0};
 };

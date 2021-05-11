@@ -25,7 +25,7 @@ class DatabaseMemory: public Database {
         string GetArticleAuthor(int gid, int aid) override;
         string GetArticleText(int gid, int aid) override;
     private:
-        map<int, vector<Article>> newsgroupsarticles;
+        map<int, vector<Article>> newsgroupsArticles;
         map<int, string> newsgroupsTitles;
         int currId{0};
 };

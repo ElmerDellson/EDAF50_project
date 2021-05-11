@@ -105,13 +105,19 @@ bool MessageHandler::Handle(){
 
 void MessageHandler::ListNewsgroups(string answer) {
     vector<string> vec = database->ListNewsgroups();
+
     Protocol p = ReadProtocol(conn);
-    if(p == Protocol::COM_END)  cout << "alles gut " << endl;
+    if (p == Protocol::COM_END)  
+        cout << "Recieved COM_END" << endl;
+    
     WriteProtocol(conn, Protocol::ANS_LIST_NG);
-    WriteProtocol(conn,Protocol::PAR_NUM);
-    WriteInt(conn, database->NoOfNewsGroups()); //TODO: Return actual number of groups
-    for (int i = 0; i < database->NoOfNewsGroups(); i++){
-        WriteProtocol(conn,Protocol::PAR_NUM);
+    WriteProtocol(conn, Protocol::PAR_NUM);
+
+    int noOfNewsgroups{database->NoOfNewsGroups()};
+    WriteInt(conn, noOfNewsgroups);
+
+    for (int i = 0; i < noOfNewsgroups; i++) {
+        WriteProtocol(conn, Protocol::PAR_NUM);
         WriteInt(conn, stoi(vec.at(i*2)));
         WriteProtocol(conn, Protocol::PAR_STRING);
         WriteInt(conn, vec.at((i*2)+1).length());
@@ -120,9 +126,8 @@ void MessageHandler::ListNewsgroups(string answer) {
         };
     }
     
-    
-    cout << "com_list_ng"<< endl;
-    cout << "answer = "<< answer << endl;
+    //cout << "com_list_ng"<< endl;
+    //cout << "answer = "<< answer << endl;
     WriteProtocol(conn, Protocol::ANS_END);
 }
 

@@ -4,6 +4,7 @@ myclient
 myserver
 message_handler
 libclientserver.a
+database/
 
 .vscode/
 
