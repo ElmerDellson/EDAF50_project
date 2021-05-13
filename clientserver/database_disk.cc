@@ -15,7 +15,7 @@ bool fileExists(const string& name) {
         return false;
 }
 
-bool isNumber(const std::string& s)
+bool IsNumber(const std::string& s)
 {
     std::string::const_iterator it = s.begin();
     while (it != s.end() && std::isdigit(*it)) 
@@ -23,9 +23,9 @@ bool isNumber(const std::string& s)
     return !s.empty() && it == s.end();
 }
 
-int findMax(const vector<int>& vec) {
+int FindMax(const vector<int>& vec) {
     int max{0};
-    for (int i = 0; i < vec.size(); i++) {
+    for (unsigned int i = 0; i < vec.size(); i++) {
         if (vec[i] > max)
             max = vec[i];
     }
@@ -33,86 +33,63 @@ int findMax(const vector<int>& vec) {
     return max;
 }
 
-DatabaseDisk::DatabaseDisk() { 
-    string metaFilePath{dbPath};
-    metaFilePath.append("ng_meta.txt");
+//Find the path to the newsgroup with ID id
+string GetPathToNGWithID(int id) {
+    string path{dbPath};
+    vector<string> newsgroups{ListNewsgroups()};
 
-    if (!fileExists(metaFilePath)) {
-        string metaFilePath{dbPath};
-        metaFilePath.append("ng_meta.txt");
-
-        ofstream stream(metaFilePath);
-
-        stream << "0\n" << endl;
-        stream.close();
+    for (int i = 0; i < newsgroups.size(); i+=2) {
+        if (stoi(newsgroups[i]) == id) {
+            path.append(newsgroups[i+1]);
+            break;
+        }
     }
-    
+
+    return path;
 }
+
+DatabaseDisk::DatabaseDisk() { }
 
 vector<string> DatabaseDisk::ListNewsgroups() {
     auto dirStream{opendir("database/newsgroups/")};
     struct dirent* dirEnt;
-
     vector<string> result;
 
-    cout << "Testing" << endl;
     if (dirStream) {
         dirEnt = readdir(dirStream);
         while (dirEnt) {
-            result.push_back(dirEnt->d_name);
+            string dirName{dirEnt->d_name};
+
+            result.push_back(dirName.substr(0, dirName.find(' ')));
+            result.push_back(dirName.substr(dirName.find(' ') + 1));
+
             dirEnt = readdir(dirStream);
         }
     }
 
-
-
-
-
-
-
-
-
-    string metaFilePath{dbPath};
-    metaFilePath.append("ng_meta.txt");
-
-    //vector<string> result;
-
-    fstream readStream(metaFilePath);
-    string helper;
-
-    while (getline(readStream, helper)) {
-        string name{helper};
-
-        getline(readStream, helper);
-
-        result.push_back(helper);
-        result.push_back(name);
-    }
-
-    result.erase(result.begin(), result.begin()+2);
+    result.erase(result.begin(), result.begin() + 4); //Get rid of "." and ".." directories
 
     return result;
 }
 
 int DatabaseDisk::NoOfNewsGroups() {
-    string metaFilePath{dbPath};
-    metaFilePath.append("ng_meta.txt");
+    auto dirStream{opendir("database/newsgroups/")};
+    int noOfNgs{-2}; //compensating for "." and ".." directories
 
-    fstream readStream(metaFilePath);
-    string helper;
-    int noOfNgs{-2}; //compensating for lines that are not newsgroups
-
-    while (getline(readStream, helper)) {
-        noOfNgs++;
+    if (dirStream) {
+        auto dirEnt{readdir(dirStream)};
+        while (dirEnt) {
+            noOfNgs++;
+            dirEnt = readdir(dirStream);
+        }
     }
-    readStream.close();
-
-    noOfNgs /= 2; //Since the meta file contains both names and IDs
 
     return noOfNgs;
 }
 
 int DatabaseDisk::NoOfArticles(int id) {
+
+
     return newsgroupsArticles.at(id).size();
 }
 
@@ -122,82 +99,37 @@ bool DatabaseDisk::CreateNewsgroup(string title) {
     auto dirStream{opendir("database/newsgroups/")};
         
     if (dirStream) {
-        struct dirent* dirEnt;
         vector<int> IDs{0};
+        vector<string> newsgroups{ListNewsgroups()};
 
-        vector<string> dirNames;
+        for (int i = 0; i < newsgroups.size(); i+=2) {
+            IDs.push_back(stoi(newsgroups[i]));
 
-        dirEnt = readdir(dirStream);
-        while (dirEnt) {
-            dirNames.push_back(dirEnt->d_name);
-            dirEnt = readdir(dirStream);
+            if (newsgroups[i+1] == title) {
+                cout << "Couldn't create newsgroup: a group with that title already exists." << endl;
+                return false;
+            }
         }
 
-        dirNames.erase(dirNames.begin(), dirNames.begin() + 2);
+        int highestID{FindMax(IDs) + 1};
 
-        for (string s : dirNames) {
-            string first{s.substr(0, s.find(' '))};
-
-            if (isNumber(first))
-                IDs.push_back(stoi(first));
-        }            
-
-        int highestID{findMax(IDs) + 1};
-
-        cout << "highestID: " << highestID << endl;
-
-        path.append("newsgroups/");
         path.append(to_string(highestID));
         path.append(" ");
         path.append(title);
         path.append("/");
 
         if (mkdir(path.c_str(), 0777) == -1) {
-            cout << "Couldn't create directory " << path << endl;
+            cout << "Couldn't create newsgroup: unable to create directory." << path << endl;
             return false;
         }
+        
+        return true;
     }
-    
-    
-    /*else 
+    else 
     {
-
-
-
-        string metaFilePath{dbPath};
-        metaFilePath.append("ng_meta.txt");
-
-        fstream readStream(metaFilePath);
-        string helper;
-        string metaText;
-        string highestIDString;
-
-        getline(readStream, highestIDString);
-
-        while (getline(readStream, helper)) {
-            metaText.append(helper);
-            metaText.append("\n");
-        }
-        readStream.close();
-
-        ofstream stream(metaFilePath);
-
-        int highestIDInt{stoi(highestIDString)};
-        highestIDInt++;
-        highestIDString = to_string(highestIDInt);
-
-        metaText.append(title);
-        metaText.append("\n");
-        metaText.append(highestIDString);
-
-        stream << highestIDString << endl;
-        stream << metaText << endl;
-        stream.close();
-
-        cout << "Newsgroup " << title << " created" << endl;
-    }*/
-
-    return true;
+        cout << "Couldn't create newsgroup: unable to open directory stream" << path << endl;
+        return false;
+    }
 }
 
 bool DatabaseDisk::DeleteNewsgroup(int id) {
@@ -214,7 +146,6 @@ vector<string> DatabaseDisk::ListArticles(int id) {
         result.push_back(to_string(x.getId()));
         
         result.push_back(x.getTitle());
-        
     }
 
     cout << "ListArticles DatabaseDisk" << endl;
@@ -222,10 +153,15 @@ vector<string> DatabaseDisk::ListArticles(int id) {
 }
 
 bool DatabaseDisk::CreateArticle(int id, string author, string title, string text) {
-    int temp = currId ++;
+    /*int temp = currId++;
     newsgroupsArticles.at(id).push_back(Article(temp, title, author, text));
 
-    cout << "CreateArticles DatabaseDisk" << endl;
+    cout << "CreateArticles DatabaseDisk" << endl;*/
+
+    string newsgroupPath{GetPathToNGWithID(id)};
+
+    
+
 
     return true;
 }

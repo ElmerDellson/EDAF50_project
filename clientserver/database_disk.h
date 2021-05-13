@@ -15,7 +15,7 @@ class DatabaseDisk: public Database {
     public:
         DatabaseDisk();
         ~DatabaseDisk() =default;
-        vector<string> ListNewsgroups() override;
+        vector<string> ListNewsgroups() override; //Lists IDs and names alternatingly
         int NoOfNewsGroups() override;
         int NoOfArticles(int id) override;
         bool CreateNewsgroup(string title) override;
@@ -27,7 +27,7 @@ class DatabaseDisk: public Database {
         string GetArticleAuthor(int gid, int aid) override;
         string GetArticleText(int gid, int aid) override;
     private:
-        string dbPath{"database/"};
+        string dbPath{"database/newsgroups/"};
         map<int, vector<Article>> newsgroupsArticles;
         map<int, string> newsgroupsTitles;
         int currId{0};
