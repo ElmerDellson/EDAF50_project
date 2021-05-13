@@ -12,6 +12,7 @@
 using namespace std;
 
 class DatabaseDisk: public Database {
+    friend string GetPathToNGWithID(int id, string dbPath, vector<string> newsgroups);
     public:
         DatabaseDisk();
         ~DatabaseDisk() =default;

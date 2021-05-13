@@ -34,12 +34,13 @@ int FindMax(const vector<int>& vec) {
 }
 
 //Find the path to the newsgroup with ID id
-string GetPathToNGWithID(int id) {
+string GetPathToNGWithID(const int& id, const string& dbPath, const vector<string>& newsgroups) {
     string path{dbPath};
-    vector<string> newsgroups{ListNewsgroups()};
 
     for (int i = 0; i < newsgroups.size(); i+=2) {
         if (stoi(newsgroups[i]) == id) {
+            path.append(to_string(id));
+            path.append(" ");
             path.append(newsgroups[i+1]);
             break;
         }
@@ -102,7 +103,7 @@ bool DatabaseDisk::CreateNewsgroup(string title) {
         vector<int> IDs{0};
         vector<string> newsgroups{ListNewsgroups()};
 
-        for (int i = 0; i < newsgroups.size(); i+=2) {
+        for (unsigned int i = 0; i < newsgroups.size(); i+=2) {
             IDs.push_back(stoi(newsgroups[i]));
 
             if (newsgroups[i+1] == title) {
@@ -158,10 +159,27 @@ bool DatabaseDisk::CreateArticle(int id, string author, string title, string tex
 
     cout << "CreateArticles DatabaseDisk" << endl;*/
 
-    string newsgroupPath{GetPathToNGWithID(id)};
+    string path{GetPathToNGWithID(id, dbPath, ListNewsgroups())};
+    path.append("/");
+    path.append(to_string(id));
+    path.append(" ");
+    path.append(title);
+    path.append(".txt");
 
-    
+    cout << "path: " << path << endl;
 
+    ofstream stream;
+    stream.open(path);
+
+    if (!stream.is_open()) {
+        cout << "Couldn't create file" << endl;
+        return false;
+    }
+
+    stream << author << "\n" << endl;
+    stream << text << endl;
+
+    stream.close();
 
     return true;
 }

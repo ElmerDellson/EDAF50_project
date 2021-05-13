@@ -231,49 +231,66 @@ void MessageHandler::ListArticle(string answer) {
 
 void MessageHandler::CreateArticle() {
     Protocol p = ReadProtocol(conn);
-    if(p == Protocol::PAR_NUM) cout << "par_num recieved" << endl;
+
+    if (p == Protocol::PAR_NUM) 
+        cout << "par_num recieved" << endl;
+    
     int id;
     int size;
     string title = "";
     string author = "";
     string text = "";
+    
     id = ReadNumber(conn);
-    cout << "id : " << id << endl;
+    
     cout << "com_create_art"<< endl;
+    cout << "id: " << id << endl;
+    
     p = ReadProtocol(conn);
-    if(p == Protocol::PAR_STRING) cout << "Par_string 1 recieved" << endl;
+    if (p == Protocol::PAR_STRING) 
+        cout << "Par_string 1 recieved" << endl;
+    
     size = ReadNumber(conn); 
-    for(int i = 0; i < size; i++){
+    
+    for (int i = 0; i < size; i++) {
         title += conn->read();
     }
-    cout << "title done" << endl;
+
+    cout << "Title done:" << title << endl;
+    
     p = ReadProtocol(conn);
-    if(p == Protocol::PAR_STRING) cout << "Par_string 2 recieved" << endl;
+    if (p == Protocol::PAR_STRING) 
+        cout << "Par_string 2 recieved" << endl;
+    
     size = ReadNumber(conn); 
-    for(int i = 0; i < size; i++){
+    for (int i = 0; i < size; i++) {
         author += conn->read();
     }
-    cout << "author done" << endl;
+
+    cout << "Author: " << author << endl;
     p = ReadProtocol(conn);
-    if(p == Protocol::PAR_STRING) cout << "Par_string 3 recieved" << endl;
+    
+    if (p == Protocol::PAR_STRING) cout << "Par_string 3 recieved" << endl;
     size = ReadNumber(conn); 
-    for(int i = 0; i < size; i++){
+    for (int i = 0; i < size; i++){
         text += conn->read();
     }
-    cout << "text done" << endl;
+    cout << "Text: " << text << endl;
+
     p = ReadProtocol(conn);
-    if(p == Protocol::COM_END)  cout << "com_end recieved " << endl;
+    if (p == Protocol::COM_END)
+        cout << "com_end recieved " << endl;
     
     WriteProtocol(conn, Protocol::ANS_CREATE_ART);
+
     if (database->CreateArticle(id, author, title, text ))
         WriteProtocol(conn, Protocol::ANS_ACK);
-    else{
+    else {
         WriteProtocol(conn, Protocol::ANS_NAK);
         WriteProtocol(conn, Protocol::ERR_NG_DOES_NOT_EXIST);
     }
     
     WriteProtocol(conn, Protocol::ANS_END);
-    
 }
 
 void MessageHandler::DeleteArticle() {
