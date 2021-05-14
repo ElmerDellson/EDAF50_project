@@ -197,7 +197,7 @@ void MessageHandler::ListArticle(string answer) {
     
     if(p == Protocol::PAR_NUM) cout << "par_num recieved" << endl;
     int id = ReadNumber(conn);
-    cout << "id : " << id << endl;
+    cout << "id: " << id << endl;
     p = ReadProtocol(conn);
     if(p == Protocol::COM_END)  cout << "com_end recieved " << endl;
     
@@ -208,15 +208,17 @@ void MessageHandler::ListArticle(string answer) {
         cout << "com_list_art"<< endl;
         WriteProtocol(conn, Protocol::ANS_ACK);
         WriteProtocol(conn,Protocol::PAR_NUM);
-        WriteInt(conn, database->NoOfArticles(id)); //TODO: Return actual number of groups
+        WriteInt(conn, database->NoOfArticles(id)); 
+
         for (int i = 0; i < database->NoOfArticles(id); i++){
-            WriteProtocol(conn,Protocol::PAR_NUM);
+            WriteProtocol(conn, Protocol::PAR_NUM);
             WriteInt(conn, stoi(vec.at(i*2)));
             WriteProtocol(conn, Protocol::PAR_STRING);
             WriteInt(conn, vec.at((i*2)+1).length());
-            for(char x :vec.at((i*2)+1)){
+
+            for (char x : vec.at((i*2)+1)) {
                 WriteChar(conn, x);
-            };
+            }
         }
     }
     catch(const std::invalid_argument& e)
@@ -353,24 +355,30 @@ void MessageHandler::GetArticle(string answer) {
     try
     {
         answer = database->GetArticleTitle(id,id2);
+
         WriteProtocol(conn, Protocol::ANS_ACK);
         WriteProtocol(conn, Protocol::PAR_STRING);
         WriteInt(conn, answer.length());
+
         for(char x :answer){
             WriteChar(conn, x);
-        };
+        }
+
         answer = database->GetArticleAuthor(id,id2);
         WriteProtocol(conn, Protocol::PAR_STRING);
         WriteInt(conn, answer.length());
+        
         for(char x :answer){
             WriteChar(conn, x);
-        };
+        }
+
         answer = database->GetArticleText(id,id2);
         WriteProtocol(conn, Protocol::PAR_STRING);
         WriteInt(conn, answer.length());
+        
         for(char x :answer){
             WriteChar(conn, x);
-        };    
+        }
     }
     catch(const std::invalid_argument& e)
     {
