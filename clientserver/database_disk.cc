@@ -71,7 +71,25 @@ string GetPathToArt(const int& id, string pathToNg, vector<string> articlesInNg)
     return path;
 }
 
-DatabaseDisk::DatabaseDisk() { }
+DatabaseDisk::DatabaseDisk() {
+    auto dirStream{opendir(dbPath.c_str())};
+
+    if (!dirStream) {
+        dirStream = opendir("database/");
+
+        if (!dirStream) {
+            if (mkdir("database/", 0777) == -1) 
+                cout << "ERROR: Unable to initialize database directory." << endl;
+            else 
+                cout << "Database directory created." << endl;
+        }
+
+        if (mkdir(dbPath.c_str(), 0777) == -1) 
+            cout << "ERROR: Unable to initialize newsgroup directory." << endl;
+        else 
+            cout << "Newsgroup directory created." << endl;
+    }
+}
 
 vector<string> DatabaseDisk::ListNewsgroups() {
     auto dirStream{opendir("database/newsgroups/")};
@@ -130,7 +148,7 @@ int DatabaseDisk::NoOfArticles(int id) {
 bool DatabaseDisk::CreateNewsgroup(string title) {
     string path{dbPath};
     auto dirStream{opendir(path.c_str())};
-    
+
     if (dirStream) {
         vector<int> IDs{0};
         vector<string> newsgroups{ListNewsgroups()};
@@ -169,16 +187,16 @@ bool DatabaseDisk::CreateNewsgroup(string title) {
 
 bool DatabaseDisk::DeleteNewsgroup(int id) {
     string path{GetPathToNg(id, dbPath, ListNewsgroups())};
-
-    cout << "path to NG: " << path << endl;
+    string commandString{"rm -r '"};
+    commandString.append(path.append("'"));
     
-    if (remove(path.c_str()) == 0) {
+    int status{system(commandString.c_str())};
+
+    if (status == 0) {
         cout << "Newsgroup deleted successfully: " << path.c_str() << endl;
         return true;
-    } else {
-        cout << "ERROR: Couldn't delete newsgroup." << endl;
+    } else
         return false;
-    }
 } 
 
 vector<string> DatabaseDisk::ListArticles(int id) {
