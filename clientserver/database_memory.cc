@@ -23,15 +23,16 @@ int DatabaseMemory::NoOfArticles(int id){
 }
 
 bool DatabaseMemory::CreateNewsgroup(string title) {
-    int id = currId++;
+    
 
     for (auto it = newsgroupsTitles.begin(); it != newsgroupsTitles.end(); ++it ) {
         if (it->second == title)
             return false;
     }
-
+    int id = currId++;
     newsgroupsTitles.insert(pair<int, string>(id, title));
     newsgroupsArticles.emplace(id, vector<Article>());
+    articleIds.emplace(id, 1);
 
     return true;
 }
@@ -72,7 +73,7 @@ vector<string> DatabaseMemory::ListArticles(int id) {
 }
 
 bool DatabaseMemory::CreateArticle(int id, string author, string title, string text) {
-    int temp = currId ++;
+    int temp = articleIds.at(id) ++;
     for (auto it = newsgroupsTitles.begin(); it != newsgroupsTitles.end(); ++it ) {
         if (it->first == id) {
             newsgroupsArticles.at(id).push_back(Article(temp, title, author, text));

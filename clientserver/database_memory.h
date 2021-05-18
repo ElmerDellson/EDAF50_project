@@ -27,7 +27,8 @@ class DatabaseMemory: public Database {
     private:
         map<int, vector<Article>> newsgroupsArticles;
         map<int, string> newsgroupsTitles;
-        int currId{0};
+        map<int, int> articleIds;
+        int currId{1};
 };
 
 #endif
