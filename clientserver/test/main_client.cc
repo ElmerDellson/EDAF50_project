@@ -11,6 +11,37 @@
 
 using namespace std;
 
+void PrintInstructions() {
+    cout << "\nOptions:" << endl;
+    cout << "List newsgroups: 1" << endl;
+    cout << "Create newsgroups: 2" << endl;
+    cout << "Delete newsgroups: 3" << endl;
+    cout << "List articles: 4" << endl;
+    cout << "Create article : 5" << endl;
+    cout << "Delete article : 6" << endl;
+    cout << "Get article : 7" << endl;
+}
+
+//Check if a string is a number
+bool IsNumber(const std::string& s)
+{
+    string::const_iterator it = s.begin();
+
+    while (it != s.end() && std::isdigit(*it)) 
+        ++it;
+
+
+    return !s.empty() && it == s.end();
+}
+
+bool IsPermittedInput(string s) {
+    if (s.find_first_not_of("abcdefghijklmnopqrstuvxyzABCDEFGHIJKLMNOPQRSTUVXYZ0123456789 ") != string::npos
+        && s.empty())
+        return false;
+    
+    return true;
+}
+
 /*
  * Send an integer to the server as four bytes.
  */
@@ -36,11 +67,9 @@ void writeString(const Connection& conn, string s)
 {
         writeProtocol(conn, Protocol::PAR_STRING);
         writeNumber(conn, s.size());
-        for(char c: s){
-            write(conn, c);
-        }
-
         
+        for(char c: s)
+            write(conn, c);
 }
 
 /*
@@ -70,238 +99,22 @@ int ReadNumber(const Connection& conn)
         return (byte1 << 24) | (byte2 << 16) | (byte3 << 8) | byte4;
 }
 
-void listNewsGroups(const Connection& conn){
-    Protocol p;
-    p = static_cast<Protocol>(readChar(conn));
-    int num;
-    if(p == Protocol::PAR_NUM){
-            num = ReadNumber(conn);
-            p = static_cast<Protocol>(readChar(conn));
-            cout << "number of groups: " << num << endl; 
-        }
-    //vector<string> v;
-    while(p != Protocol::ANS_END){
-        if(p == Protocol::PAR_NUM){
-            num = ReadNumber(conn);
-            cout << "id: " << num << ", " ;
-            p = static_cast<Protocol>(readChar(conn));
-        }
-        if(p == Protocol::PAR_STRING){
-            int i = ReadNumber(conn);
-            string temp = "";
-            for(int j = 0; j<i; j++){
-                temp += readChar(conn);
-            }
-            cout << temp << endl;
-            p = static_cast<Protocol>(readChar(conn));
-        }
-    }
-}
-void createNewsGroups(const Connection& conn){
-    Protocol p;
-    p = static_cast<Protocol>(readChar(conn));
-    while(p != Protocol::ANS_END){
-        
-        if( p == Protocol::ANS_ACK){
-            cout << "created succesfully" << endl;
-            p = static_cast<Protocol>(readChar(conn));
-        }
-        if( p == Protocol::ANS_NAK){
-            p = static_cast<Protocol>(readChar(conn));
-            if(p == Protocol::ERR_NG_ALREADY_EXISTS){
-                cout << "ERROR: News group already exist."  << endl;
-                p = static_cast<Protocol>(readChar(conn));
-            }
-            else{
-                cout << "ERROR: error of unknown type" << endl;
-                p = static_cast<Protocol>(readChar(conn));
-            }
-        }
-    } 
-}
-void deleteNewsGroups(const Connection& conn){
-    Protocol p;
-    p = static_cast<Protocol>(readChar(conn));
-    while(p != Protocol::ANS_END){
-        if( p == Protocol::ANS_ACK){
-            cout << "deleted succesfully" << endl;
-            p = static_cast<Protocol>(readChar(conn));
-        }
-        if( p == Protocol::ANS_NAK){
-            p = static_cast<Protocol>(readChar(conn));
-            if(p == Protocol::ERR_NG_DOES_NOT_EXIST){
-                cout << "ERROR: News group does not exist."  << endl;
-                p = static_cast<Protocol>(readChar(conn));
-            }
-            else{
-                cout << "ERROR: error of unknown type" << endl;
-                p = static_cast<Protocol>(readChar(conn));
-            }
-        }
-    } 
-}
-void listArticles(const Connection& conn){
-    Protocol p;
-    p = static_cast<Protocol>(readChar(conn));
-    int num;
-    bool first = true;
-    while(p != Protocol::ANS_END){
-        if(p == Protocol::ANS_ACK){
-            p = static_cast<Protocol>(readChar(conn));
-            while (p != Protocol::ANS_END){
-                
-                if(p == Protocol::PAR_NUM){
-                    num = ReadNumber(conn);
-                    if(first){
-                        cout << "number of articles: " << num << endl;
-                        first = false;
-                    }
-                    else{
-                        cout << "id: " << num << ", ";
-                    }
-                    p = static_cast<Protocol>(readChar(conn));
-                }
-                if(p == Protocol::PAR_STRING){
-                    int i = ReadNumber(conn);
-                    string temp = "";
-                    for(int j = 0; j<i; j++){
-                        temp += readChar(conn);
-                    }
-                    cout  << temp << endl;
-                    p = static_cast<Protocol>(readChar(conn));
-                }
-            }
-        }
-        if(p == Protocol::ANS_NAK){
-            p = static_cast<Protocol>(readChar(conn));
-            if(p == Protocol::ERR_NG_DOES_NOT_EXIST){
-                cout << "ERROR: News group does not exist."  << endl;
-                p = static_cast<Protocol>(readChar(conn));
-            }
-            else{
-                cout << "ERROR: error of unknown type" << endl;
-                p = static_cast<Protocol>(readChar(conn));
-            }
-        }
-    }
-}
-void createArticle(const Connection& conn){
-    Protocol p;
-    p = static_cast<Protocol>(readChar(conn));
-    while (p != Protocol::ANS_END){
-        if(p == Protocol::ANS_ACK){
-            cout << "article created successfuly" << endl;
-            p = static_cast<Protocol>(readChar(conn));
-        } 
-        if(p == Protocol::ANS_NAK){
-            p = static_cast<Protocol>(readChar(conn));
-            if(p == Protocol::ERR_NG_DOES_NOT_EXIST){
-                cout << "ERROR: News group does not exist."  << endl;
-                p = static_cast<Protocol>(readChar(conn));
-            }
-            else{
-                cout << "ERROR: error of unknown type" << endl;
-                p = static_cast<Protocol>(readChar(conn));
-            }
-        }
-    }
-}
-void deleteArticle(const Connection& conn){
-    Protocol p;
-    p = static_cast<Protocol>(readChar(conn));
-    while(p != Protocol::ANS_END){
-        if( p == Protocol::ANS_ACK){
-            cout << "deleted succesfully" << endl;
-            p = static_cast<Protocol>(readChar(conn));
-        }
-        if( p == Protocol::ANS_NAK){
-            p = static_cast<Protocol>(readChar(conn));
-            if(p == Protocol::ERR_ART_DOES_NOT_EXIST){
-                cout << "ERROR: Article does not exist."  << endl;
-                p = static_cast<Protocol>(readChar(conn));
-            }
-            else if(p == Protocol::ERR_NG_DOES_NOT_EXIST){
-                cout << "ERROR: News group does not exist."  << endl;
-                p = static_cast<Protocol>(readChar(conn));
-            }
-            else{
-                cout << "ERROR: error of unknown type" << endl;
-                p = static_cast<Protocol>(readChar(conn));
-            }
-        }
-    } 
-}
-void getArticle(const Connection& conn){
-    Protocol p;
-    p = static_cast<Protocol>(readChar(conn));
-    int num;
-    while(p != Protocol::ANS_END){
-        if(p == Protocol::ANS_ACK){
-            p = static_cast<Protocol>(readChar(conn));        
-            int i;
-            while(p == Protocol::PAR_STRING){
-                
-                i = ReadNumber(conn);
-                string temp = "";
-                for(int j = 0; j<i; j++){
-                    temp += readChar(conn);
-                }
-                cout << "Title: " << temp << endl;
-                p = static_cast<Protocol>(readChar(conn));
-                i = ReadNumber(conn);
-                temp = "";
-                for(int j = 0; j<i; j++){
-                    temp += readChar(conn);
-                }
-                cout << "Author: " << temp << endl;
-                p = static_cast<Protocol>(readChar(conn));
-                i = ReadNumber(conn);
-                temp = "";
-                for(int j = 0; j<i; j++){
-                    temp += readChar(conn);
-                }
-                cout << "Text: " << temp << endl;
-                p = static_cast<Protocol>(readChar(conn));
-            
-            }
-            
-        }
-        if(p == Protocol::ANS_NAK){
-            p = static_cast<Protocol>(readChar(conn));
-            if(p == Protocol::ERR_ART_DOES_NOT_EXIST){
-                cout << "ERROR: Article does not exist."  << endl;
-                p = static_cast<Protocol>(readChar(conn));
-            }
-            if(p == Protocol::ERR_NG_DOES_NOT_EXIST){
-                cout << "ERROR: News group does not exist."  << endl;
-                p = static_cast<Protocol>(readChar(conn));
-            }
-            else{
-                cout << "ERROR: error of unknown type" << endl;
-                p = static_cast<Protocol>(readChar(conn));
-            }
-        }
-    }
-}
-
-
-
 /* Creates a client for the given args, if possible.
  * Otherwise exits with error code.
  */
 Connection init(int argc, char* argv[])
 {
         if (argc != 3) {
-                cerr << "Usage: myclient host-name port-number" << endl;
-                exit(1);
+            cerr << "Usage: myclient host-name port-number" << endl;
+            exit(1);
         }
 
         int port = -1;
         try {
-                port = stoi(argv[2]);
+            port = stoi(argv[2]);
         } catch (exception& e) {
-                cerr << "Wrong port number. " << e.what() << endl;
-                exit(2);
+            cerr << "Wrong port number. " << e.what() << endl;
+            exit(2);
         }
 
         Connection conn(argv[1], port);
@@ -313,169 +126,521 @@ Connection init(int argc, char* argv[])
         return conn;
 }
 
+
+void handleListNewsgroupsResponse(const Connection& conn){
+    Protocol p(static_cast<Protocol>(readChar(conn)));
+    int num;
+    
+    if (p == Protocol::PAR_NUM){
+            num = ReadNumber(conn);
+            p = static_cast<Protocol>(readChar(conn));
+            cout << "Number of groups: " << num << endl; 
+        }
+    
+    while (p != Protocol::ANS_END) {
+        if (p == Protocol::PAR_NUM) {
+            num = ReadNumber(conn);
+            cout << "ID: " << num << ", " ;
+            p = static_cast<Protocol>(readChar(conn));
+        }
+
+        if (p == Protocol::PAR_STRING) {
+            int i{ReadNumber(conn)};
+            string temp = ""; //Do we need to initialize this?
+
+            for (int j = 0; j<i; j++)
+                temp += readChar(conn);
+
+            cout << temp << endl;
+
+            p = static_cast<Protocol>(readChar(conn));
+        }
+    }
+}
+
+void handleCreateNewsgroupsResponse(const Connection& conn){
+    Protocol p(static_cast<Protocol>(readChar(conn)));
+
+    while (p != Protocol::ANS_END) {
+        
+        if (p == Protocol::ANS_ACK) {
+            cout << "Created succesfully" << endl;
+            p = static_cast<Protocol>(readChar(conn));
+        }
+
+        if (p == Protocol::ANS_NAK) {
+            p = static_cast<Protocol>(readChar(conn));
+
+            if (p == Protocol::ERR_NG_ALREADY_EXISTS) {
+                cout << "ERROR: Newsgroup already exist."  << endl;
+                p = static_cast<Protocol>(readChar(conn));
+            }
+            else {
+                cout << "ERROR: Error of unknown type" << endl;
+                p = static_cast<Protocol>(readChar(conn));
+            }
+        }
+    } 
+}
+
+void handleDeleteNewsgroupsResponse(const Connection& conn) {
+    Protocol p(static_cast<Protocol>(readChar(conn)));
+
+    while (p != Protocol::ANS_END) {
+        if (p == Protocol::ANS_ACK) {
+            cout << "Deleted succesfully." << endl;
+            p = static_cast<Protocol>(readChar(conn));
+        }
+
+        if (p == Protocol::ANS_NAK) {
+            p = static_cast<Protocol>(readChar(conn));
+            
+            if (p == Protocol::ERR_NG_DOES_NOT_EXIST) {
+                cout << "ERROR: Newsgroup does not exist."  << endl;
+                p = static_cast<Protocol>(readChar(conn));
+            }
+            else{
+                cout << "ERROR: Error of unknown type" << endl;
+                p = static_cast<Protocol>(readChar(conn));
+            }
+        }
+    } 
+}
+
+void handleListArticlesResponse(const Connection& conn){
+    Protocol p(static_cast<Protocol>(readChar(conn)));
+    
+    int num;
+    bool first{true};
+
+    while (p != Protocol::ANS_END) {
+        if (p == Protocol::ANS_ACK) {
+            p = static_cast<Protocol>(readChar(conn));
+
+            while (p != Protocol::ANS_END) {    
+                if (p == Protocol::PAR_NUM) {
+                    num = ReadNumber(conn);
+                    if (first) {
+                        cout << "Number of articles: " << num << endl;
+                        first = false;
+                    }
+                    else {
+                        cout << "ID: " << num << ", ";
+                    }
+
+                    p = static_cast<Protocol>(readChar(conn));
+                }
+
+                if (p == Protocol::PAR_STRING) {
+                    int i{ReadNumber(conn)};
+                    string temp = ""; //Do we need to initialize?
+
+                    for (int j = 0; j<i; j++)
+                        temp += readChar(conn);
+
+                    cout  << temp << endl;
+
+                    p = static_cast<Protocol>(readChar(conn));
+                }
+            }
+        }
+
+        if (p == Protocol::ANS_NAK) {
+            p = static_cast<Protocol>(readChar(conn));
+
+            if (p == Protocol::ERR_NG_DOES_NOT_EXIST) {
+                cout << "ERROR: Newsgroup does not exist."  << endl;
+                p = static_cast<Protocol>(readChar(conn));
+            }
+            else {
+                cout << "ERROR: Error of unknown type" << endl;
+                p = static_cast<Protocol>(readChar(conn));
+            }
+        }
+    }
+}
+
+void handleCreateArticleResponse(const Connection& conn){
+    Protocol p(static_cast<Protocol>(readChar(conn)));
+
+    while (p != Protocol::ANS_END) {
+        if (p == Protocol::ANS_ACK) {
+            cout << "article created successfuly" << endl;
+            p = static_cast<Protocol>(readChar(conn));
+        }
+
+        if (p == Protocol::ANS_NAK) {
+            p = static_cast<Protocol>(readChar(conn));
+
+            if (p == Protocol::ERR_NG_DOES_NOT_EXIST) {
+                cout << "ERROR: Newsgroup does not exist."  << endl;
+                p = static_cast<Protocol>(readChar(conn));
+            }
+            else {
+                cout << "ERROR: Error of unknown type" << endl;
+                p = static_cast<Protocol>(readChar(conn));
+            }
+        }
+    }
+}
+
+void handleDeleteArticleResponse(const Connection& conn){
+    Protocol p(static_cast<Protocol>(readChar(conn)));
+
+    while (p != Protocol::ANS_END) {
+        if (p == Protocol::ANS_ACK) {
+            cout << "Deleted succesfully." << endl;
+            p = static_cast<Protocol>(readChar(conn));
+        }
+
+        if (p == Protocol::ANS_NAK) {
+            p = static_cast<Protocol>(readChar(conn));
+
+            if (p == Protocol::ERR_ART_DOES_NOT_EXIST) {
+                cout << "ERROR: Article does not exist."  << endl;
+                p = static_cast<Protocol>(readChar(conn));
+            }
+            else if (p == Protocol::ERR_NG_DOES_NOT_EXIST) {
+                cout << "ERROR: Newsgroup does not exist."  << endl;
+                p = static_cast<Protocol>(readChar(conn));
+            }
+            else {
+                cout << "ERROR: Error of unknown type" << endl;
+                p = static_cast<Protocol>(readChar(conn));
+            }
+        }
+    } 
+}
+
+void handleGetArticleResponse(const Connection& conn){
+    Protocol p(static_cast<Protocol>(readChar(conn)));
+    
+    while (p != Protocol::ANS_END) {
+        if (p == Protocol::ANS_ACK) {
+            p = static_cast<Protocol>(readChar(conn));        
+            int i;
+
+            while (p == Protocol::PAR_STRING) {
+                i = ReadNumber(conn);
+                string temp = "";
+
+                for (int j = 0; j<i; j++)
+                    temp += readChar(conn);
+                
+                cout << "Title: " << temp << endl;
+                p = static_cast<Protocol>(readChar(conn));
+                i = ReadNumber(conn);
+                temp = "";
+
+                for(int j = 0; j<i; j++)
+                    temp += readChar(conn);
+                
+                cout << "Author: " << temp << endl;
+                p = static_cast<Protocol>(readChar(conn));
+                i = ReadNumber(conn);
+                temp = "";
+                
+                for (int j = 0; j<i; j++)
+                    temp += readChar(conn);
+                
+                cout << "Text: " << temp << endl;
+                p = static_cast<Protocol>(readChar(conn));
+            }
+        }
+
+        if (p == Protocol::ANS_NAK) {
+            p = static_cast<Protocol>(readChar(conn));
+
+            if (p == Protocol::ERR_ART_DOES_NOT_EXIST) {
+                cout << "ERROR: Article does not exist."  << endl;
+                p = static_cast<Protocol>(readChar(conn));
+            }
+
+            if (p == Protocol::ERR_NG_DOES_NOT_EXIST) {
+                cout << "ERROR: Newsgroup does not exist."  << endl;
+                p = static_cast<Protocol>(readChar(conn));
+            }
+            else {
+                cout << "ERROR: Error of unknown type" << endl;
+                p = static_cast<Protocol>(readChar(conn));
+            }
+        }
+    }
+}
+
+void listNewsgroups(const Connection& conn) {
+    writeProtocol(conn, Protocol::COM_LIST_NG);
+    writeProtocol(conn, Protocol::COM_END);
+}
+
+void createNewsgroup(const Connection& conn) {
+    string temp;
+    writeProtocol(conn, Protocol::COM_CREATE_NG);
+    cout << "Newsgroup title: ";
+
+    getline(cin, temp);
+
+    while  (!IsPermittedInput(temp)) {
+        cout << "Please write only letters or numbers. " << endl;
+        cout << "Newsgroup title: ";
+        getline(cin, temp);
+    }
+
+    writeString(conn, temp);
+    writeProtocol(conn, Protocol::COM_END);
+}
+
+void deleteNewsgroup(const Connection& conn) {
+    string temp;
+
+    writeProtocol(conn, Protocol::COM_DELETE_NG);
+    writeProtocol(conn, Protocol::PAR_NUM);
+    cout << "Enter the ID of the newsgroup to be deleted: ";
+    
+    getline(cin, temp);
+
+    while (!IsNumber(temp)) {
+        cout << "Please enter a valid ID number." << endl;
+        cout << "Enter the ID of the newsgroup to be deleted: ";
+        getline(cin, temp);
+    }
+    
+    int id{stoi(temp)};
+
+    writeNumber(conn, id);
+    writeProtocol(conn, Protocol::COM_END);
+}
+
+void listArticles(const Connection& conn) {
+    string temp;
+
+    writeProtocol(conn, Protocol::COM_LIST_ART);
+    writeProtocol(conn, Protocol::PAR_NUM);
+    cout << "Enter newsgroup ID: ";
+
+    getline(cin, temp);
+
+    while (!IsNumber(temp)) {
+        cout << "Please enter a valid ID number." << endl;                    
+        cout << "Enter newsgroup ID: ";
+        getline(cin, temp);
+    }
+
+    int id{stoi(temp)};
+
+    writeNumber(conn, id);
+    writeProtocol(conn, Protocol::COM_END);
+}
+
+void createArticle(const Connection& conn) {
+    string temp;
+    writeProtocol(conn, Protocol::COM_CREATE_ART);
+    cout << "Enter newsgroup ID: ";
+    
+    getline(cin, temp);
+
+    while (!IsNumber(temp)) {
+        cout << "Please enter a valid ID number." << endl;                    
+        cout << "Enter newsgroup ID: ";
+        getline(cin, temp);
+    }
+
+    int id{stoi(temp)};
+
+    cout << "Title: ";
+    string title;
+    getline(cin, title);
+
+    while  (!IsPermittedInput(title)) {
+        cout << "Please write only letters or numbers. " << endl;
+        cout << "Title: ";
+        getline(cin, title);
+    }
+
+    cout << "Author: ";
+    string author;
+    getline(cin, author);
+
+    cout << "Text: ";
+    string text;
+    getline(cin, text);
+    
+    writeProtocol(conn, Protocol::PAR_NUM);
+    writeNumber(conn, id);
+    writeString(conn, title);
+    writeString(conn, author);
+    writeString(conn, text);
+    writeProtocol(conn, Protocol::COM_END);
+}
+
+void deleteArticle(const Connection& conn) {
+    string temp;
+    writeProtocol(conn, Protocol::COM_DELETE_ART);
+    writeProtocol(conn, Protocol::PAR_NUM);
+    cout << "Enter newsgroup ID: ";
+    
+    getline(cin, temp);
+
+    while (!IsNumber(temp)) {
+        cout << "Please enter a valid ID number." << endl;                    
+        cout << "Enter newsgroup ID: ";
+        getline(cin, temp);
+    }
+
+    int id{stoi(temp)};
+
+    writeNumber(conn, id);
+    writeProtocol(conn, Protocol::PAR_NUM);
+    cout << "Enter article ID: ";
+    
+    getline(cin, temp);
+
+    while (!IsNumber(temp)) {
+        cout << "Please enter a valid ID number." << endl;                    
+        cout << "Enter article ID: ";
+        getline(cin, temp);
+    }
+
+    id = stoi(temp);
+
+    writeNumber(conn, id);
+    writeProtocol(conn, Protocol::COM_END);
+}
+
+void getArticle(const Connection& conn) {
+    string temp;
+    writeProtocol(conn, Protocol::COM_GET_ART);
+    writeProtocol(conn, Protocol::PAR_NUM);
+    cout << "Newsgroup ID: ";
+    
+    getline(cin, temp);
+
+    while (!IsNumber(temp)) {
+        cout << "Please enter a valid ID number." << endl;                    
+        cout << "Enter article ID: ";
+        getline(cin, temp);
+    }
+
+    int id{stoi(temp)};
+
+    writeNumber(conn, id);
+    writeProtocol(conn, Protocol::PAR_NUM);
+    cout << "Article ID: ";
+    
+    getline(cin, temp);
+
+    while (!IsNumber(temp)) {
+        cout << "Please enter a valid ID number." << endl;                    
+        cout << "Enter article ID: ";
+        getline(cin, temp);
+    }
+
+    id = stoi(temp);
+    
+    writeNumber(conn, id);
+    writeProtocol(conn, Protocol::COM_END);
+}
+
 int app(const Connection& conn)
 {
-    
-    
-
     int nbr;
     int id;
-    string ID;
     string temp;
     string title;
     string author;
     string text;
-    cout << "Options:" << endl;
-    cout << "List newsgroups: 1" << endl;
-    cout << "Create newsgroups: 2" << endl;
-    cout << "Delete newsgroups: 3" << endl;
-    cout << "List articles: 4" << endl;
-    cout << "Create article : 5" << endl;
-    cout << "Delete article : 6" << endl;
-    cout << "Get article : 7" << endl;
-        while (cin >> nbr) {
 
-            switch (nbr)
-            {
+    PrintInstructions();
+
+    while (getline(cin, temp)) {
+        
+        while (!IsNumber(temp)) {
+            cout << "Please select a valid option." << endl;
+            PrintInstructions();
+            getline(cin, temp);
+        }
+
+        nbr = stoi(temp);
+        switch (nbr) {
             case 1:
-                writeProtocol(conn, Protocol::COM_LIST_NG);
-                writeProtocol(conn, Protocol::COM_END);
+                listNewsgroups(conn);
                 break;
+
             case 2:
-                writeProtocol(conn, Protocol::COM_CREATE_NG);
-                cout << "Please write a title for the news group: ";
-                cin >> temp;
-                writeString(conn, temp);
-                writeProtocol(conn, Protocol::COM_END);
+                createNewsgroup(conn);
                 break;
+
             case 3:
-                writeProtocol(conn, Protocol::COM_DELETE_NG);
-                writeProtocol(conn, Protocol::PAR_NUM);
-                cout << "id: ";
-                cin >> id;
-                writeNumber(conn, id);
-                writeProtocol(conn, Protocol::COM_END);
+                deleteNewsgroup(conn);
                 break;
+
             case 4:
-                writeProtocol(conn, Protocol::COM_LIST_ART);
-                writeProtocol(conn, Protocol::PAR_NUM);
-                cout << "news group id: ";
-                cin >> id;
-                writeNumber(conn, id);
-                writeProtocol(conn, Protocol::COM_END);
+                listArticles(conn);
                 break;
+
             case 5:
-                
-                writeProtocol(conn, Protocol::COM_CREATE_ART);
-                cout << "News group id: ";
-                
-                cin >> id;
-                cout << "Title: ";
-                getline(cin, ID);
-                getline(cin, title);
-                //cin >> title;
-                cout << "Author: "; 
-                getline(cin, author);
-                //cin >> author;
-                cout << "text: ";
-                getline(cin, text);
-                //cin >> text;
-                
-                writeProtocol(conn, Protocol::PAR_NUM);
-                writeNumber(conn, id);
-                writeString(conn, title);
-                writeString(conn, author);
-                writeString(conn, text);
-                writeProtocol(conn, Protocol::COM_END);
+                createArticle(conn);
                 break;
+
             case 6:
-                writeProtocol(conn, Protocol::COM_DELETE_ART);
-                writeProtocol(conn, Protocol::PAR_NUM);
-                cout << "Newsgroup id: ";
-                cin >> id;
-                writeNumber(conn, id);
-                writeProtocol(conn, Protocol::PAR_NUM);
-                cout << "Article id: ";
-                cin >> id;
-                writeNumber(conn, id);
-                writeProtocol(conn, Protocol::COM_END);
+                deleteArticle(conn);
                 break;
+
             case 7:
-                writeProtocol(conn, Protocol::COM_GET_ART);
-                writeProtocol(conn, Protocol::PAR_NUM);
-                cout << "Newsgroup id: ";
-                cin >> id;
-                writeNumber(conn, id);
-                writeProtocol(conn, Protocol::PAR_NUM);
-                cout << "Article id: ";
-                cin >> id;
-                writeNumber(conn, id);
-                writeProtocol(conn, Protocol::COM_END);
+                getArticle(conn);
                 break;
             
             default:
                 writeProtocol(conn, Protocol::COM_LIST_NG);
                 writeProtocol(conn, Protocol::COM_END);
                 break;
+        }
+
+        try {
+            char reply = readChar(conn);
+            
+            switch (static_cast<Protocol>(reply)) {
+                case Protocol::ANS_LIST_NG:
+                    handleListNewsgroupsResponse(conn);
+                    break;
+                    
+                case Protocol::ANS_CREATE_NG:
+                    handleCreateNewsgroupsResponse(conn);
+                    break;
+
+                case Protocol::ANS_DELETE_NG:
+                    handleDeleteNewsgroupsResponse(conn);
+                    break;
+
+                case Protocol::ANS_LIST_ART:
+                    handleListArticlesResponse(conn);
+                    break;
+
+                case Protocol::ANS_CREATE_ART:
+                    handleCreateArticleResponse(conn);
+                    break;
+
+                case Protocol::ANS_DELETE_ART:
+                    handleDeleteArticleResponse(conn);
+                    break;
+
+                case Protocol::ANS_GET_ART:
+                    handleGetArticleResponse(conn);
+                    break;
+                
+                default:
+                    break;
             }
-                try {
-                        
-                        char reply = readChar(conn);
-                        
-                        switch (static_cast<Protocol>(reply))
-                        {
-                        case Protocol::ANS_LIST_NG :
-                            listNewsGroups(conn);
-                            break;
-                        case Protocol::ANS_CREATE_NG :
-                            createNewsGroups(conn);
-                            break;
-                        case Protocol::ANS_DELETE_NG :
-                            deleteNewsGroups(conn);
-                            break;
-                        case Protocol::ANS_LIST_ART :
-                            listArticles(conn);
-                            break;
-                        case Protocol::ANS_CREATE_ART :
-                            createArticle(conn);
-                            break;
-                        case Protocol::ANS_DELETE_ART :
-                            deleteArticle(conn);
-                            break;
-                        case Protocol::ANS_GET_ART :
-                            getArticle(conn);
-                            break;
-                        
-                        default:
-                            break;
-                        }
-                        //cout << " " << reply << endl;
-                        cout << "give another command: ";
-                } catch (ConnectionClosedException&) {
-                        cout << " no reply from server. Exiting." << endl;
-                        return 1;
-                }
+            
+        } catch (ConnectionClosedException&) {
+                cout << "No reply from server. Exiting." << endl;
+                return 1;
         }
 
-        return 0;
+        PrintInstructions();
+    }
 
-       /*    
-        cout << "Type a number: ";
-        int nbr;
-        while (cin >> nbr) {
-                try {
-                        cout << nbr << " is ...";
-                        writeNumber(conn, nbr);
-                        string reply = readString(conn);
-                        cout << " " << reply << endl;
-                        cout << "Type another number: ";
-                } catch (ConnectionClosedException&) {
-                        cout << " no reply from server. Exiting." << endl;
-                        return 1;
-                }
-        }
-        cout << "\nexiting.\n";
-        return 0;*/
+    return 0;
 }
 
 int main(int argc, char* argv[])

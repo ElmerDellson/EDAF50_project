@@ -169,6 +169,8 @@ bool DatabaseDisk::CreateNewsgroup(string title) {
 
 bool DatabaseDisk::DeleteNewsgroup(int id) {
     string path{GetPathToNg(id, dbPath, ListNewsgroups())};
+
+    cout << "path to NG: " << path << endl;
     
     if (remove(path.c_str()) == 0) {
         cout << "Newsgroup deleted successfully: " << path.c_str() << endl;
@@ -177,8 +179,6 @@ bool DatabaseDisk::DeleteNewsgroup(int id) {
         cout << "ERROR: Couldn't delete newsgroup." << endl;
         return false;
     }
-
-    return true;
 } 
 
 vector<string> DatabaseDisk::ListArticles(int id) {
@@ -300,6 +300,7 @@ string DatabaseDisk::GetArticleText(int gid, int aid) {
     if (stream.is_open()) {
         string helper;
 
+        //Get rid of the author and the extra line
         getline(stream, helper);
         getline(stream, helper);
 
