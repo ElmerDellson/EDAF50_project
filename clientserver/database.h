@@ -9,7 +9,7 @@ using namespace std;
 class Database {
     public:
         virtual ~Database() =default;
-        virtual vector<string> ListNewsgroups() = 0;
+        virtual vector<string> ListNewsgroups() = 0; //Alternatingly IDs and titles
         virtual int NoOfNewsGroups() = 0;
         virtual int NoOfArticles(int id) = 0;
         virtual bool CreateNewsgroup(string title) = 0;

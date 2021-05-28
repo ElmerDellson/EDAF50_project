@@ -113,10 +113,9 @@ void MessageHandler::ListNewsgroups(string answer) {
     WriteProtocol(conn, Protocol::ANS_LIST_NG);
     WriteProtocol(conn, Protocol::PAR_NUM);
 
-    int noOfNewsgroups{database->NoOfNewsGroups()};
-    WriteInt(conn, noOfNewsgroups);
+    WriteInt(conn, vec.size()/2);
 
-    for (int i = 0; i < noOfNewsgroups; i++) {
+    for (int i = 0; i < vec.size()/2; i++) {
         WriteProtocol(conn, Protocol::PAR_NUM);
         WriteInt(conn, stoi(vec.at(i*2)));
         WriteProtocol(conn, Protocol::PAR_STRING);

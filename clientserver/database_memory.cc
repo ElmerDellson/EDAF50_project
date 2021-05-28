@@ -23,8 +23,6 @@ int DatabaseMemory::NoOfArticles(int id){
 }
 
 bool DatabaseMemory::CreateNewsgroup(string title) {
-    
-
     for (auto it = newsgroupsTitles.begin(); it != newsgroupsTitles.end(); ++it ) {
         if (it->second == title)
             return false;

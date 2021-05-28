@@ -7,6 +7,15 @@
 #include <stdio.h>
 #include <dirent.h>
 
+//Check if a file exists
+bool FileExists(const std::string& name) {
+    if (FILE *file = fopen(name.c_str(), "r")) {
+        fclose(file);
+        return true;
+    } else 
+        return false;
+}
+
 //Check if a string is a number
 bool IsNumber(const std::string& s)
 {
@@ -89,6 +98,19 @@ DatabaseDisk::DatabaseDisk() {
         else 
             cout << "Newsgroup directory created." << endl;
     }
+
+    string metaFilePath{dbPath.append("meta.txt")};
+    if (!FileExists(metaFilePath)) {
+        ofstream stream(metaFilePath);
+
+        //Initalize meta file with the highest newsgroup ID (0)
+        if (stream.is_open()) {
+            stream << "0" << endl;
+            stream.close();
+        }
+        else
+            cout << "ERROR: Couldn't create newsgroups meta file. Do you have permission to write to disk?" << endl;   
+    }
 }
 
 vector<string> DatabaseDisk::ListNewsgroups() {
@@ -98,24 +120,37 @@ vector<string> DatabaseDisk::ListNewsgroups() {
 
     if (dirStream) {
         dirEnt = readdir(dirStream);
+        vector<pair<int, string>> newsgroups;
+
         while (dirEnt) {
             string dirName{dirEnt->d_name};
 
-            result.push_back(dirName.substr(0, dirName.find(' ')));
-            result.push_back(dirName.substr(dirName.find(' ') + 1));
+            string idString{dirName.substr(0, dirName.find(' '))};
+            string name{dirName.substr(dirName.find(' ') + 1)};
+            
+            if ((IsNumber(idString))) {
+                int id{stoi(idString)};
+
+                pair<int, string> newsgroup(id, name);
+
+                newsgroups.push_back(newsgroup);
+            }
 
             dirEnt = readdir(dirStream);
         }
-    }
 
-    result.erase(result.begin(), result.begin() + 4); //Get rid of "." and ".." directories
+        for (pair<int, string> ng : newsgroups) {
+            result.push_back(to_string(ng.first));
+            result.push_back(ng.second);
+        }
+    }
 
     return result;
 }
 
 int DatabaseDisk::NoOfNewsGroups() {
     auto dirStream{opendir("database/newsgroups/")};
-    int noOfNgs{-2}; //compensating for "." and ".." directories
+    int noOfNgs{-3}; //compensating for "." and ".." directories, and meta file
 
     if (dirStream) {
         auto dirEnt{readdir(dirStream)};
@@ -155,7 +190,7 @@ bool DatabaseDisk::CreateNewsgroup(string title) {
 
         //Get newsgroup IDs, check if a newsgroup with this title already exists
         for (unsigned int i = 0; i < newsgroups.size(); i+=2) {
-            IDs.push_back(stoi(newsgroups[i]));
+            //IDs.push_back(stoi(newsgroups[i]));
 
             if (newsgroups[i+1] == title) {
                 cout << "ERROR: a newsgroup with that title already exists." << endl;
@@ -164,10 +199,21 @@ bool DatabaseDisk::CreateNewsgroup(string title) {
         }
 
         //Increment the highest current newsgroup ID
-        int highestID{FindMax(IDs) + 1};
+        //int highestID{FindMax(IDs) + 1};
+        string highestID;
+
+        fstream metaStream;
+        metaStream.open(path.append("meta.txt").c_str());
+
+        if (metaStream.is_open())
+            getline(metaStream, highestID);
+        else
+            cout << "ERROR: Couldn't open newsgroups meta file." << endl;
+
+        highestID = to_string(stoi(highestID) + 1);
 
         //Build the path
-        path.append(to_string(highestID).append(" "));
+        path.append(highestID.append(" "));
         path.append(title.append("/"));
 
         //Create the directory
