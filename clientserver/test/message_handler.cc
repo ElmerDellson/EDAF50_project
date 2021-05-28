@@ -115,7 +115,7 @@ void MessageHandler::ListNewsgroups(string answer) {
 
     WriteInt(conn, vec.size()/2);
 
-    for (int i = 0; i < vec.size()/2; i++) {
+    for (unsigned int i = 0; i < vec.size()/2; i++) {
         WriteProtocol(conn, Protocol::PAR_NUM);
         WriteInt(conn, stoi(vec.at(i*2)));
         WriteProtocol(conn, Protocol::PAR_STRING);
@@ -194,22 +194,27 @@ void MessageHandler::DeleteNewsgroup() {
 void MessageHandler::ListArticle(string answer) {
     Protocol p = ReadProtocol(conn);
     
-    if(p == Protocol::PAR_NUM) cout << "par_num recieved" << endl;
+    if (p == Protocol::PAR_NUM) 
+        cout << "par_num recieved" << endl;
+    
     int id = ReadNumber(conn);
-    cout << "id: " << id << endl;
     p = ReadProtocol(conn);
-    if(p == Protocol::COM_END)  cout << "com_end recieved " << endl;
+
+    if (p == Protocol::COM_END)  
+        cout << "com_end recieved " << endl;
     
     WriteProtocol(conn, Protocol::ANS_LIST_ART);
-    try
-    {
+
+    try {
         vector<string> vec = database->ListArticles(id);
         cout << "com_list_art"<< endl;
+
         WriteProtocol(conn, Protocol::ANS_ACK);
         WriteProtocol(conn,Protocol::PAR_NUM);
-        WriteInt(conn, database->NoOfArticles(id)); 
 
-        for (int i = 0; i < database->NoOfArticles(id); i++){
+        WriteInt(conn, vec.size()/2); 
+
+        for (unsigned int i = 0; i < vec.size()/2; i++) {
             WriteProtocol(conn, Protocol::PAR_NUM);
             WriteInt(conn, stoi(vec.at(i*2)));
             WriteProtocol(conn, Protocol::PAR_STRING);
@@ -219,13 +224,10 @@ void MessageHandler::ListArticle(string answer) {
                 WriteChar(conn, x);
             }
         }
-    }
-    catch(const std::invalid_argument& e)
-    {
+    } catch(const std::invalid_argument& e) {
         WriteProtocol(conn, Protocol::ANS_NAK);
         WriteProtocol(conn, Protocol::ERR_NG_DOES_NOT_EXIST);
     }
-    
     
     WriteProtocol(conn, Protocol::ANS_END);
 }

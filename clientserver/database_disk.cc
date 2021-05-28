@@ -94,12 +94,13 @@ DatabaseDisk::DatabaseDisk() {
         }
 
         if (mkdir(dbPath.c_str(), 0777) == -1) 
-            cout << "ERROR: Unable to initialize newsgroup directory." << endl;
+            cout << "ERROR: Unable to initialize newsgroups directory." << endl;
         else 
-            cout << "Newsgroup directory created." << endl;
+            cout << "Newsgroups directory created." << endl;
     }
 
-    string metaFilePath{dbPath.append("meta.txt")};
+    string path{dbPath};
+    string metaFilePath{path.append("meta.txt")};
     if (!FileExists(metaFilePath)) {
         ofstream stream(metaFilePath);
 
@@ -109,7 +110,7 @@ DatabaseDisk::DatabaseDisk() {
             stream.close();
         }
         else
-            cout << "ERROR: Couldn't create newsgroups meta file. Do you have permission to write to disk?" << endl;   
+            cout << "ERROR: Couldn't create newsgroups meta file. Do you have permission to write to disk? (DatabaseDisk)" << endl;   
     }
 }
 
@@ -119,32 +120,32 @@ vector<string> DatabaseDisk::ListNewsgroups() {
     vector<string> result;
 
     if (dirStream) {
-        dirEnt = readdir(dirStream);
         vector<pair<int, string>> newsgroups;
-
+        dirEnt = readdir(dirStream);
+        
         while (dirEnt) {
             string dirName{dirEnt->d_name};
 
-            string idString{dirName.substr(0, dirName.find(' '))};
-            string name{dirName.substr(dirName.find(' ') + 1)};
+            string id{dirName.substr(0, dirName.find(' '))}; //Get newsgroup ID
+            string name{dirName.substr(dirName.find(' ') + 1)}; //Get newsgroup title
             
-            if ((IsNumber(idString))) {
-                int id{stoi(idString)};
-
-                pair<int, string> newsgroup(id, name);
-
+            if ((IsNumber(id))) { //Only add to newsgroups if we managed to get an ID
+                pair<int, string> newsgroup(stoi(id), name);
                 newsgroups.push_back(newsgroup);
             }
 
-            dirEnt = readdir(dirStream);
+            dirEnt = readdir(dirStream); 
         }
 
-        for (pair<int, string> ng : newsgroups) {
+        sort(newsgroups.begin(), newsgroups.end()); //Sort the newsgroups by ID, ascending
+
+        for (pair<int, string> ng : newsgroups) { //Construct result vector: IDs and titles
             result.push_back(to_string(ng.first));
             result.push_back(ng.second);
         }
-    }
-
+    } else
+        cout << "ERROR: Couldn't open newsgroups directory (ListNewsGroups)." << endl;
+    
     return result;
 }
 
@@ -166,7 +167,7 @@ int DatabaseDisk::NoOfNewsGroups() {
 
 int DatabaseDisk::NoOfArticles(int id) {
     auto dirStream{opendir(GetPathToNg(id, dbPath, ListNewsgroups()).c_str())};
-    int noOfArts{-2}; //compensating for "." and ".." directories
+    int noOfArts{-3}; //compensating for "." and ".." directories, and "meta.txt"
 
     if (dirStream) {
         auto fileEnt{readdir(dirStream)};
@@ -181,8 +182,7 @@ int DatabaseDisk::NoOfArticles(int id) {
 }
 
 bool DatabaseDisk::CreateNewsgroup(string title) {
-    string path{dbPath};
-    auto dirStream{opendir(path.c_str())};
+    auto dirStream{opendir(dbPath.c_str())};
 
     if (dirStream) {
         vector<int> IDs{0};
@@ -190,43 +190,59 @@ bool DatabaseDisk::CreateNewsgroup(string title) {
 
         //Get newsgroup IDs, check if a newsgroup with this title already exists
         for (unsigned int i = 0; i < newsgroups.size(); i+=2) {
-            //IDs.push_back(stoi(newsgroups[i]));
-
             if (newsgroups[i+1] == title) {
-                cout << "ERROR: a newsgroup with that title already exists." << endl;
+                cout << "ERROR: a newsgroup with that title already exists (CreateNewsGroup)." << endl;
                 return false;
             }
         }
 
-        //Increment the highest current newsgroup ID
-        //int highestID{FindMax(IDs) + 1};
+        string metaPath{dbPath};
         string highestID;
+        ifstream metaStreamRead;
 
-        fstream metaStream;
-        metaStream.open(path.append("meta.txt").c_str());
+        metaStreamRead.open(metaPath.append("meta.txt").c_str());
 
-        if (metaStream.is_open())
-            getline(metaStream, highestID);
-        else
-            cout << "ERROR: Couldn't open newsgroups meta file." << endl;
+        if (metaStreamRead.is_open()) {
+            if (getline(metaStreamRead, highestID)) {
+                cout << "highestID: " << highestID << endl;
+                highestID = to_string(stoi(highestID) + 1); //Increment the highest ID
+                metaStreamRead.close();
 
-        highestID = to_string(stoi(highestID) + 1);
-
-        //Build the path
-        path.append(highestID.append(" "));
-        path.append(title.append("/"));
-
-        //Create the directory
-        if (mkdir(path.c_str(), 0777) == -1) {
-            cout << "ERROR: Unable to create directory." << path << endl;
+                ofstream metaStreaWrite;
+                metaStreaWrite.open(metaPath.c_str(), fstream::out | fstream::trunc);
+                metaStreaWrite.write(highestID.c_str(), highestID.length());
+                metaStreaWrite.close();
+            }   
+        }
+        else {
+            cout << "ERROR: Couldn't open newsgroups meta file (CreateNewsGroup)." << endl;
             return false;
         }
+
+        //Build the path
+        string ngPath{dbPath};
+        ngPath.append(highestID.append(" "));
+        ngPath.append(title.append("/"));
+
+        //Create the directory
+        if (mkdir(ngPath.c_str(), 0777) == -1) {
+            cout << "ERROR: Unable to create directory (CreateNewsGroup)." << ngPath << endl;
+            return false;
+        }
+
+        string ngMetaPath{ngPath};
+        ngMetaPath.append("meta.txt");
+
+        ofstream ngMetaStreamWrite;
+        ngMetaStreamWrite.open(ngMetaPath.c_str());
+        ngMetaStreamWrite.write("0", 1);
+        ngMetaStreamWrite.close();
         
         return true;
     }
     else 
     {
-        cout << "ERROR: Unable to open directory stream" << path << endl;
+        cout << "ERROR: Unable to open directory stream " << dbPath << " (CreateNewsGroup)." << endl;
         return false;
     }
 }
@@ -238,67 +254,86 @@ bool DatabaseDisk::DeleteNewsgroup(int id) {
     
     int status{system(commandString.c_str())};
 
-    if (status == 0) {
-        cout << "Newsgroup deleted successfully: " << path.c_str() << endl;
+    if (status == 0)
         return true;
-    } else
+    else
         return false;
 } 
 
 vector<string> DatabaseDisk::ListArticles(int id) {
     auto dirStream{opendir( GetPathToNg(id, dbPath, ListNewsgroups()).c_str() )};
-
     struct dirent* fileEnt;
     vector<string> result;
 
     if (dirStream) {
+        vector<pair<int, string>> articles;
         fileEnt = readdir(dirStream);
         
         while (fileEnt) {
             string dirName{fileEnt->d_name};
 
-            string artID{dirName.substr(0, dirName.find(' '))};
+            string artID{dirName.substr(0, dirName.find(' '))}; //Get article ID
+            string artTitle{dirName.substr(dirName.find(' ') + 1, 
+                            dirName.length() - (5 + artID.length()))}; //Get article title
 
-            result.push_back(artID);
-            result.push_back(dirName.substr(dirName.find(' ') + 1, 
-                             dirName.length() - (5 + artID.length())));
+            if (IsNumber(artID)) {
+                pair<int, string> article(stoi(artID), artTitle);
+                articles.push_back(article);
+            }
 
             fileEnt = readdir(dirStream);
         }
-    }
 
-    result.erase(result.begin(), result.begin() + 4); //Get rid of "." and ".." directories
+        sort(articles.begin(), articles.end());
+
+        for (pair<int, string> art : articles) {
+            result.push_back(to_string(art.first));
+            result.push_back(art.second);
+        }
+    } else 
+        cout << "ERROR: Couldn't open newsgroup (ListArticles)." << endl;
 
     return result;
 }
 
 bool DatabaseDisk::CreateArticle(int id, string author, string title, string text) {
     string path{GetPathToNg(id, dbPath, ListNewsgroups()).append("/")};
+    string metaPath{path};
+    string highestID;
+    ifstream metaStreamRead;
 
-    vector<int> IDs{0};
-    vector<string> articles{ListArticles(id)};
+    metaStreamRead.open(metaPath.append("meta.txt").c_str());
 
-    //Get article IDs in newsgroup 
-    for (unsigned int i = 0; i < articles.size(); i+=2)
-        IDs.push_back(stoi(articles[i]));
+    if (metaStreamRead.is_open()) {
+        if (getline(metaStreamRead, highestID)) {
+            highestID = to_string(stoi(highestID) + 1); //Increment the highest ID
+            metaStreamRead.close();
 
-    //Increment the highest ID
-    int highestID{FindMax(IDs) + 1};
+            ofstream metaStreamWrite;
+            metaStreamWrite.open(metaPath.c_str(), fstream::out | fstream::trunc);
+            metaStreamWrite.write(highestID.c_str(), highestID.length()); //Replace the highestID in meta.txt
+            metaStreamWrite.close();
+        }   
+    }
+    else {
+        cout << "ERROR: Couldn't open newsgroup meta file (CreateArticle)." << endl;
+        return false;
+    }
 
     //Build path
-    path.append(to_string(highestID).append(" "));
+    path.append(highestID.append(" "));
     path.append(title.append(".txt"));    
 
-    ofstream stream(path);
-
     //Write article author and contents to file
+    ofstream stream(path);
+    
     if (stream.is_open()) {
         stream << author << "\n" << endl;
         stream << text << endl;
         stream.close();
     }
     else {
-        cout << "ERROR: Couldn't create file. Do you have permission to write to disk?" << endl;
+        cout << "ERROR: Couldn't create file. Do you have permission to write to disk? (CreateArticle)" << endl;
         return false;
     }
 
@@ -312,7 +347,7 @@ bool DatabaseDisk::DeleteArticle(int gid, int aid) {
         cout << "Article deleted successfully: " << path.c_str() << endl;
         return true;
     } else {
-        cout << "ERROR: Couldn't delete article." << endl;
+        cout << "ERROR: Couldn't delete article (DeleteArticle)." << endl;
         return false;
     }
 }
@@ -329,7 +364,7 @@ string DatabaseDisk::GetArticleTitle(int gid, int aid) {
     }
 
     if (title.length() == 0) {
-        cout << "ERROR: Article with id " << aid << " not found in newsgroup with id " << gid << endl;
+        cout << "ERROR: Couldn't open artile (GetArticleTitle)." << endl;
         return "";
     }
     
@@ -349,7 +384,7 @@ string DatabaseDisk::GetArticleAuthor(int gid, int aid) {
         return author;
     } 
     else {
-        cout << "ERROR: Couldn't open article." << endl;
+        cout << "ERROR: Couldn't open article (GetArticleAuthor)." << endl;
         return "";
     }
 }
@@ -376,7 +411,7 @@ string DatabaseDisk::GetArticleText(int gid, int aid) {
         return text;
 
     } else {
-        cout << "ERROR: Couldn't open article." << endl;
+        cout << "ERROR: Couldn't open article (GetArticleText)." << endl;
         return "";
     }   
 }
